@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>School — Home</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;line-height:1.4;background:#f6faf7;color:#0b2a1a}
+
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#fff;border-bottom:1px solid #e6f0ea;position:sticky;top:0;z-index:10}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#3aa55a,#1f7a3b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .brand h1{font-size:16px}
+    .nav-links{display:flex;gap:12px;align-items:center}
+    .nav-links a{padding:8px 12px;border-radius:8px;text-decoration:none;color:#0b2a1a}
+    .nav-links a:hover{background:#eef7ee}
+    .btn{background:#2f8f3c;color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+
+    .hamburger{display:none;background:transparent;border:0;font-size:20px}
+    @media (max-width:720px){
+      .nav-links{display:none;position:absolute;right:12px;top:64px;flex-direction:column;background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(6,30,15,.06)}
+      .hamburger{display:block}
+      .nav-links.show{display:flex}
+    }
+
+    .container{max-width:900px;margin:26px auto;padding:0 18px;display:flex;flex-direction:column;gap:20px}
+
+    .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 20px rgba(6,30,15,.03);border:1px solid #e9f4ea}
+    .card h2{font-size:18px;margin-bottom:10px}
+    .card .sub{font-size:13px;color:#356c43;margin-bottom:12px}
+
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    thead th{background:#f3fbf5;color:#16572f;text-align:left;padding:10px;border-bottom:2px solid #e6f2ea}
+    tbody td{padding:10px;border-bottom:1px solid #f1f6f3}
+    tbody tr:hover{background:#fbfffd}
+
+    .actions button{margin-right:6px;padding:6px 8px;border-radius:8px;border:0;cursor:pointer}
+    .edit{background:#fff;border:1px solid #cfe9d1}
+    .delete{background:#ffecec;border:1px solid #ffd6d6}
+
+    .timetable th,.timetable td{text-align:center}
+    .time-col{width:90px}
+
+    .row{display:flex;gap:12px;align-items:center}
+    .search input{padding:8px 10px;border-radius:8px;border:1px solid #dcefe0}
+    .small{font-size:13px;color:#55775a}
+    .controls{display:flex;gap:10px;align-items:center}
+    select{padding:8px;border-radius:8px;border:1px solid #dcefe0}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h1> School</h1>
+        <div class="small">Admin dashboard</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="hamburger" aria-label="menu" id="hamburger">☰</button>
+      <div class="nav-links" id="navLinks">
+        <a href="#students">Students</a>
+        <a href="#timetable">Timetable</a>
+        <button class="btn" onclick="location.href='StudentReg.html'">Add Student</button>
+        <button class="btn" onclick="location.href='TimetableForm.html'">Add Time Table</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- STUDENT DETAILS TABLE -->
+    <article class="card" id="students">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+        <div>
+          <h2>Student Details</h2>
+          <div class="sub">List of enrolled students and quick actions</div>
+        </div>
+        <div class="row">
+          <div class="search">
+            <input id="studentSearch" placeholder="Search by name or id" />
+          </div>
+        </div>
+      </div>
+
+      <div style="overflow:auto">
+        <table id="studentsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Grade</th>
+              <th>Email</th>
+              <th class="time-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- TIMETABLE -->
+    <article class="card" id="timetable">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+        <div>
+          <h2>Class Timetable</h2>
+          <div class="sub">Choose a class to view its weekly schedule</div>
+        </div>
+        <div class="controls">
+          <label for="classSelect" class="small">Show class:</label>
+          <select id="classSelect">
+            <option value="">-- Select class --</option>
+            <option value="8">Class 9</option>
+            <option value="9">Class 10</option>
+            <option value="10">Class 11</option>
+            <option value="11">Class 12</option>
+          </select>
+          <div class="small">Click a cell to edit</div>
+        </div>
+      </div>
+
+      <div style="overflow:auto">
+        <table class="timetable">
+          <thead>
+            <tr>
+              <th class="time-col">Time</th>
+              <th>Monday</th>
+              <th>Tuesday</th>
+              <th>Wednesday</th>
+              <th>Thursday</th>
+              <th>Friday</th>
+            </tr>
+          </thead>
+          <tbody id="timetableBody"></tbody>
+        </table>
+      </div>
+    </article>
+
+    <section class="card" id="about">
+      <h2>About this page</h2>
+      <p class="small">This is a simple static demo. Use the search box above to filter students. The timetable is editable — changes are kept in memory while the page is open. Select a class from the dropdown to view that class's schedule.</p>
+    </section>
+  </main>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger && hamburger.addEventListener('click', ()=> navLinks.classList.toggle('show'));
+
+    const students = [
+      {id:'S001', name:'Aanya Sharma', age:14, grade:'9', email:'aanya@example.com'},
+      {id:'S002', name:'Rahul Nair', age:15, grade:'10', email:'rahul@example.com'},
+      {id:'S003', name:'Meera Joshi', age:13, grade:'8', email:'meera@example.com'},
+      {id:'S004', name:'Karan Patel', age:16, grade:'11', email:'karan@example.com'},
+    ];
+
+    // Timetable dataset keyed by class id
+    const timetableData = {
+      '8': [
+        {time:'08:30 - 09:15', mon:'Math', tue:'Science', wed:'English', thu:'Social', fri:'PE'},
+        {time:'09:20 - 10:05', mon:'English', tue:'Math', wed:'Art', thu:'Science', fri:'Music'},
+        {time:'10:20 - 11:05', mon:'Computer', tue:'History', wed:'Math', thu:'English', fri:'Library'},
+        {time:'11:10 - 11:55', mon:'Science', tue:'English', wed:'Social', thu:'Math', fri:'Assembly'},
+      ],
+      '9': [
+        {time:'08:30 - 09:15', mon:'Math', tue:'Physics', wed:'English', thu:'Chemistry', fri:'PE'},
+        {time:'09:20 - 10:05', mon:'English', tue:'Math', wed:'Biology', thu:'History', fri:'Art'},
+        {time:'10:20 - 11:05', mon:'Science', tue:'Computer', wed:'Math', thu:'Geography', fri:'Music'},
+        {time:'11:10 - 11:55', mon:'History', tue:'English', wed:'Physics', thu:'Math', fri:'Assembly'},
+      ],
+      '10': [
+        {time:'08:30 - 09:15', mon:'Physics', tue:'Math', wed:'Chemistry', thu:'English', fri:'PE'},
+        {time:'09:20 - 10:05', mon:'Math', tue:'Biology', wed:'History', thu:'Physics', fri:'Art'},
+        {time:'10:20 - 11:05', mon:'Computer', tue:'Chemistry', wed:'Math', thu:'English', fri:'Music'},
+        {time:'11:10 - 11:55', mon:'English', tue:'Physics', wed:'Geography', thu:'Math', fri:'Assembly'},
+      ],
+      '11': [
+        {time:'08:30 - 09:15', mon:'Calculus', tue:'Physics', wed:'Economics', thu:'Chemistry', fri:'PE'},
+        {time:'09:20 - 10:05', mon:'Physics', tue:'Calculus', wed:'English', thu:'Biology', fri:'Art'},
+        {time:'10:20 - 11:05', mon:'Computer', tue:'Chemistry', wed:'Math', thu:'Economics', fri:'Music'},
+        {time:'11:10 - 11:55', mon:'English', tue:'Physics', wed:'Geography', thu:'Calculus', fri:'Assembly'},
+      ]
+    };
+
+    const studentsTbody = document.querySelector('#studentsTable tbody');
+    function renderStudents(list){
+      studentsTbody.innerHTML = '';
+      list.forEach(s=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${s.id}</td>
+          <td>${s.name}</td>
+          <td>${s.age}</td>
+          <td>${s.grade}</td>
+          <td>${s.email}</td>
+          <td class="actions time-col">
+            <button class="edit" onclick="editStudent('${s.id}')">Edit</button>
+            <button class="delete" onclick="deleteStudent('${s.id}')">Delete</button>
+          </td>`;
+        studentsTbody.appendChild(tr);
+      });
+    }
+    renderStudents(students);
+
+    document.getElementById('studentSearch').addEventListener('input', (e)=>{
+      const q = e.target.value.toLowerCase().trim();
+      if(!q) return renderStudents(students);
+      const filtered = students.filter(s=> s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q));
+      renderStudents(filtered);
+    });
+
+    window.editStudent = function(id){
+      const s = students.find(x=>x.id===id);
+      if(!s) return alert('Student not found');
+      const newName = prompt('Edit name', s.name);
+      if(newName) { s.name = newName; renderStudents(students); }
+    }
+    window.deleteStudent = function(id){
+      if(!confirm('Delete this student?')) return;
+      const idx = students.findIndex(x=>x.id===id);
+      if(idx>-1){ students.splice(idx,1); renderStudents(students); }
+    }
+
+    const ttBody = document.getElementById('timetableBody');
+    // Render timetable for a given classKey ('' = empty table)
+    function renderTimetable(classKey){
+      ttBody.innerHTML = '';
+      if(!classKey || !timetableData[classKey]){
+        // show placeholder rows
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="time-col">--</td><td colspan="5" class="small">Please select a class from the dropdown above to view its timetable.</td>`;
+        ttBody.appendChild(tr);
+        return;
+      }
+
+      const timetable = timetableData[classKey];
+      timetable.forEach((row, rIdx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="time-col">${row.time}</td>
+          <td data-day="mon" data-r="${rIdx}">${row.mon}</td>
+          <td data-day="tue" data-r="${rIdx}">${row.tue}</td>
+          <td data-day="wed" data-r="${rIdx}">${row.wed}</td>
+          <td data-day="thu" data-r="${rIdx}">${row.thu}</td>
+          <td data-day="fri" data-r="${rIdx}">${row.fri}</td>
+        `;
+        ttBody.appendChild(tr);
+      });
+
+      // attach click handlers for inline edit
+      ttBody.querySelectorAll('td[data-day]').forEach(td=>{
+        td.style.cursor = 'pointer';
+        td.addEventListener('click', ()=>{
+          const current = td.textContent;
+          const newVal = prompt('Edit subject', current);
+          if(newVal!==null){
+            const r = Number(td.dataset.r);
+            const d = td.dataset.day;
+            timetableData[classKey][r][d] = newVal;
+            renderTimetable(classKey);
+          }
+        })
+      });
+    }
+
+    // initial empty render
+    renderTimetable('');
+
+    // handle class selection
+    const classSelect = document.getElementById('classSelect');
+    classSelect.addEventListener('change', (e)=>{
+      const val = e.target.value;
+      renderTimetable(val);
+    });
+
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='/' && document.activeElement.tagName!=='INPUT'){
+        e.preventDefault(); document.getElementById('studentSearch').focus();
+      }
+    });
+  </script>
+</body>
+</html>

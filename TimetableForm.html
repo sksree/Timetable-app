@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create Timetable | Indigo School</title>
+
+  <!-- Styles: matches the enhanced input look you liked -->
+  <style>
+    :root{
+      --accent:#2f8f3c;
+      --accent-2:#196b2a;
+      --muted:#57785d;
+      --bg:#f2fff7;
+      --card:#ffffff;
+      --border:#e4f2e6;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:linear-gradient(135deg,var(--bg),#ffffff);
+      color:#0b3a1e;
+      margin:0;padding:0;
+    }
+    .container{max-width:820px;margin:48px auto;padding:28px}
+    .card{
+      background:var(--card);
+      border-radius:14px;
+      padding:22px;
+      box-shadow:0 12px 30px rgba(20,70,35,.06);
+      border:1px solid var(--border);
+      margin-bottom:18px;
+    }
+    h1{margin:0 0 8px;font-size:24px;color:var(--accent)}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    label{display:block;font-weight:600;color:#1a4a2b;margin-bottom:8px}
+    /* single-column form layout */
+    form{display:flex;flex-direction:column;gap:14px}
+    select,input,textarea{
+      width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid #dcefe0;
+      background:#fbfffc;font-size:15px;transition:all .2s;
+      outline:none;
+    }
+    select:hover,input:hover,textarea:hover{border-color:#b4e1c4;background:#fff}
+    select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(47,143,60,.15)}
+    .field-note{font-size:13px;color:#6d8c75;margin-top:6px}
+    .row{display:flex;gap:12px;align-items:center}
+    .btn{
+      display:inline-block;padding:11px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:600;
+    }
+    .btn-primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 8px 22px rgba(30,100,50,.12)}
+    .btn-ghost{background:#fff;border:1px solid #d6eede;color:var(--accent);padding:10px 14px}
+    .muted{color:#7d9a86;font-size:13px}
+    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .hint{font-size:13px;color:#55775a}
+
+    /* Period card: each period shows fields stacked vertically */
+    .period{
+      border-radius:12px;padding:12px;background:linear-gradient(180deg,#fbfff9,#ffffff);
+      border:1px solid #eaf6ee;box-shadow:0 6px 18px rgba(12,60,30,.03);
+      margin-bottom:10px;
+    }
+    .period .period-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+    .period .period-head .title{font-weight:700;color:#155730}
+    .period .period-body{display:flex;flex-direction:column;gap:8px}
+    .period small{color:#6b8b74}
+
+    .actions{display:flex;gap:8px;align-items:center}
+    .remove-btn{background:#fff;border:1px solid #ffd6d6;color:#a33;padding:6px 10px;border-radius:10px;cursor:pointer}
+
+    .preview{background:#f7fff7;border-radius:10px;padding:10px;border:1px dashed #dbeedf;color:#235c3a;font-size:14px}
+    footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+    @media(max-width:720px){
+      .container{padding:18px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Create / Edit Timetable</h1>
+      <p class="lead">Build the weekly schedule for a class. Add periods (one block = Time + Monday..Friday). Each field is shown one per row for clarity.</p>
+
+      <form id="ttForm">
+        <!-- choose class -->
+        <div>
+          <label for="classSelect">Class *</label>
+          <select id="classSelect" required>
+            <option value="">-- Select class --</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+          </select>
+          <div class="field-note">When you select a class, existing timetable (if any) will load into the editor.</div>
+        </div>
+
+        <!-- Add period / remove all -->
+        <div class="controls">
+          <button id="addPeriod" type="button" class="btn btn-primary">+ Add Period</button>
+          <button id="clearPeriods" type="button" class="btn btn-ghost">Clear All Periods</button>
+          <div class="hint">You can add as many periods as necessary. Each period contains Time and 5 subject fields (Mon–Fri).</div>
+        </div>
+
+        <!-- periods container -->
+        <div id="periodsContainer" aria-live="polite"></div>
+
+        <!-- preview & save -->
+        <div class="preview" id="preview">No class selected.</div>
+
+        <footer>
+          <div style="display:flex;gap:10px">
+            <button id="backBtn" type="button" class="btn btn-ghost" onclick="location.href='home.html'">← Back</button>
+            <button id="saveBtn" type="button" class="btn btn-primary">Save Timetable & Return</button>
+          </div>
+          <div class="muted">Tip: Editors are saved to your browser (localStorage).</div>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // LocalStorage key
+    const STORAGE_KEY = 'timetableData';
+
+    // Utility: read/write storage
+    function readStorage(){
+      try{
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      }catch(e){ return {} }
+    }
+    function writeStorage(obj){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    }
+
+    // DOM refs
+    const classSelect = document.getElementById('classSelect');
+    const addPeriodBtn = document.getElementById('addPeriod');
+    const periodsContainer = document.getElementById('periodsContainer');
+    const preview = document.getElementById('preview');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearPeriods');
+
+    // When class changes, load its timetable
+    classSelect.addEventListener('change', () => {
+      const classKey = classSelect.value;
+      loadClass(classKey);
+    });
+
+    // Add period
+    addPeriodBtn.addEventListener('click', () => {
+      addPeriodCard(); updatePreview();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if(!confirm('Clear all periods for this class in the editor?')) return;
+      periodsContainer.innerHTML = '';
+      updatePreview();
+    });
+
+    // Save: collect periods into array and store under selected class
+    saveBtn.addEventListener('click', () => {
+      const classKey = classSelect.value;
+      if(!classKey){ alert('Please choose a class first.'); classSelect.focus(); return; }
+      const periods = collectPeriodsFromUI();
+      // validate at least one period/time
+      if(periods.length === 0){ 
+        if(!confirm('No periods found. Save empty timetable for this class?')) return;
+      }
+      const store = readStorage();
+      store[classKey] = periods;
+      writeStorage(store);
+      alert('✅ Timetable saved for class ' + classKey);
+      // redirect back to main page where timetable will be read from localStorage
+      location.href = 'index.html';
+    });
+
+    // On load: initialize UI
+    (function init(){
+      // If there is a class param in URL (optional), preselect it
+      const urlParams = new URLSearchParams(window.location.search);
+      const preset = urlParams.get('class');
+      if(preset){
+        classSelect.value = preset;
+        loadClass(preset);
+      } else {
+        updatePreview();
+      }
+    })();
+
+    // Load class timetable into editor
+    function loadClass(classKey){
+      periodsContainer.innerHTML = '';
+      if(!classKey){
+        preview.textContent = 'No class selected.';
+        return;
+      }
+      const store = readStorage();
+      const tt = store[classKey] || [];
+      if(tt.length === 0){
+        preview.textContent = `No existing timetable for Class ${classKey}. You can add periods below.`;
+        return;
+      }
+      // render periods
+      tt.forEach(row => {
+        addPeriodCard(row);
+      });
+      updatePreview();
+    }
+
+    // Create a period card (optionally prefilled)
+    function addPeriodCard(data = null){
+      const idx = Date.now() + Math.floor(Math.random()*1000);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'period';
+      wrapper.dataset.pid = idx;
+
+      // Build inner HTML: head (time + remove) and body (one field per row)
+      wrapper.innerHTML = `
+        <div class="period-head">
+          <div class="title">Period</div>
+          <div class="actions">
+            <button type="button" class="remove-btn">Remove</button>
+          </div>
+        </div>
+        <div class="period-body">
+          <div>
+            <label>Time</label>
+            <input type="text" class="p-time" placeholder="e.g. 08:30 - 09:15" />
+          </div>
+          <div>
+            <label>Monday</label>
+            <input type="text" class="p-mon" placeholder="Subject for Monday" />
+          </div>
+          <div>
+            <label>Tuesday</label>
+            <input type="text" class="p-tue" placeholder="Subject for Tuesday" />
+          </div>
+          <div>
+            <label>Wednesday</label>
+            <input type="text" class="p-wed" placeholder="Subject for Wednesday" />
+          </div>
+          <div>
+            <label>Thursday</label>
+            <input type="text" class="p-thu" placeholder="Subject for Thursday" />
+          </div>
+          <div>
+            <label>Friday</label>
+            <input type="text" class="p-fri" placeholder="Subject for Friday" />
+          </div>
+        </div>
+      `;
+
+      // Prefill if data given
+      if(data){
+        wrapper.querySelector('.p-time').value = data.time || '';
+        wrapper.querySelector('.p-mon').value = data.mon || '';
+        wrapper.querySelector('.p-tue').value = data.tue || '';
+        wrapper.querySelector('.p-wed').value = data.wed || '';
+        wrapper.querySelector('.p-thu').value = data.thu || '';
+        wrapper.querySelector('.p-fri').value = data.fri || '';
+      }
+
+      // Remove handler
+      wrapper.querySelector('.remove-btn').addEventListener('click', () => {
+        if(!confirm('Remove this period?')) return;
+        wrapper.remove();
+        updatePreview();
+      });
+
+      // append and focus time input
+      periodsContainer.appendChild(wrapper);
+      wrapper.querySelector('.p-time').focus();
+
+      // update preview when any input changes
+      wrapper.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', updatePreview);
+      });
+    }
+
+    // Collect periods into array of objects
+    function collectPeriodsFromUI(){
+      const periods = [];
+      periodsContainer.querySelectorAll('.period').forEach(p => {
+        const time = p.querySelector('.p-time').value.trim();
+        const mon = p.querySelector('.p-mon').value.trim();
+        const tue = p.querySelector('.p-tue').value.trim();
+        const wed = p.querySelector('.p-wed').value.trim();
+        const thu = p.querySelector('.p-thu').value.trim();
+        const fri = p.querySelector('.p-fri').value.trim();
+        // Only include if at least time or one subject present
+        if(time || mon || tue || wed || thu || fri){
+          periods.push({time, mon, tue, wed, thu, fri});
+        }
+      });
+      return periods;
+    }
+
+    // Update preview box summarizing number of periods and a one-line sample
+    function updatePreview(){
+      const classKey = classSelect.value;
+      if(!classKey){
+        preview.textContent = 'No class selected.';
+        return;
+      }
+      const periods = collectPeriodsFromUI();
+      if(periods.length === 0){
+        preview.textContent = `Class ${classKey} currently has 0 periods in the editor.`;
+        return;
+      }
+      const lines = periods.slice(0,6).map((p,i) => {
+        const t = p.time || `Period ${i+1}`;
+        // show Monday subject as sample
+        const m = p.mon || '—';
+        return `${t}: ${m}`;
+      });
+      const more = periods.length>6 ? `\n…and ${periods.length-6} more period(s)` : '';
+      preview.textContent = `Class ${classKey} — ${periods.length} period(s):\n` + lines.join('\n') + more;
+    }
+  </script>
+</body>
+</html>
