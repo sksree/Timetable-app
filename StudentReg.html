@@ -5,15 +5,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Add Student | Indigo School</title>
   <style>
-    /* ===== Base Styles ===== */
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(135deg, #f2fff7, #ffffff);
-      color: #0b3a1e;
-      margin: 0;
-      padding: 0;
+    /* ===== NAVBAR STYLES ===== */
+    :root{
+      --accent:#2f8f3c; --accent-2:#196b2a;
+    }
+    *{box-sizing:border-box}
+    body{font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(135deg, #f2fff7, #ffffff); color: #0b3a1e; margin:0; padding:0;}
+
+    .navbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 18px;background:#fff;border-bottom:1px solid #e6f0ea;
+      position:sticky;top:0;z-index:120;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{
+      width:40px;height:40px;border-radius:8px;
+      background:linear-gradient(135deg,#3aa55a,#1f7a3b);
+      display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;
+    }
+    .brand h1{font-size:16px;margin:0}
+    .nav-right{display:flex;gap:12px;align-items:center}
+    .nav-links{display:flex;gap:12px;align-items:center}
+    .nav-links a, .nav-links button.link-btn{
+      padding:8px 12px;border-radius:8px;text-decoration:none;color:#0b2a1a;background:transparent;border:0;cursor:pointer;
+    }
+    .nav-links a:hover{background:#eef7ee}
+
+    /* DROPDOWN */
+    .dropdown{position:relative}
+    .drop-toggle{
+      display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 12px;border-radius:8px;background:transparent;border:0;
+    }
+    .drop-toggle:hover{background:#eef7ee}
+    .caret{font-size:12px;color:#175a33}
+    .drop-menu{
+      position:absolute;top:calc(100% + 8px);left:0;min-width:200px;background:#fff;border-radius:8px;
+      box-shadow:0 10px 30px rgba(6,30,15,.08);border:1px solid #e6f2ea;overflow:hidden;display:none;z-index:60;
+    }
+    .drop-menu.show{display:block}
+    .drop-menu a{display:block;padding:10px 12px;text-decoration:none;color:#0b2a1a;border-bottom:1px solid #f0f6f3}
+    .drop-menu a:last-child{border-bottom:0}
+    .drop-menu a:hover{background:#f6fff5}
+
+    .btn{
+      background:linear-gradient(180deg,var(--accent),var(--accent-2));
+      color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;
     }
 
+    .hamburger{display:none;background:transparent;border:0;font-size:20px}
+    @media (max-width:820px){
+      .nav-links{
+        display:none;position:absolute;right:12px;top:56px;
+        flex-direction:column;background:#fff;padding:12px;border-radius:8px;
+        box-shadow:0 6px 18px rgba(6,30,15,.06);min-width:220px;
+      }
+      .hamburger{display:block}
+      .nav-links.show{display:flex}
+      .drop-menu{position:static;box-shadow:none;border:0;padding:0;background:transparent}
+      .drop-menu a{background:#fff;border-radius:8px;margin-bottom:6px;border-bottom:0}
+    }
+
+    /* ===== FORM STYLES (original) ===== */
     .form-container {
       max-width: 580px;
       margin: 60px auto;
@@ -39,7 +91,6 @@
       margin-bottom: 35px;
     }
 
-    /* ===== Form Layout ===== */
     form {
       display: flex;
       flex-direction: column;
@@ -54,7 +105,6 @@
       margin-bottom: 6px;
     }
 
-    /* ===== Improved Input & Select Styling ===== */
     input,
     select {
       width: 95%;
@@ -86,7 +136,6 @@
       font-size: 14px;
     }
 
-    /* ===== File Upload ===== */
     .avatar-upload {
       display: flex;
       flex-direction: column;
@@ -113,7 +162,6 @@
       color: #1b4f2e;
     }
 
-    /* ===== Buttons ===== */
     .form-actions {
       display: flex;
       justify-content: space-between;
@@ -153,11 +201,74 @@
       background: #f5fff8;
       transform: translateY(-1px);
     }
+
+    @media (max-width:640px){
+      .form-container{ margin: 20px; padding: 24px; }
+      input,select{ width:100%; }
+      .form-actions{ flex-direction:column-reverse; gap:10px; align-items:stretch; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="form-container">
+  <!-- NAVBAR -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h1> School</h1>
+        <div style="font-size:12px;color:#55775a">Admin dashboard</div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="menu">☰</button>
+
+      <div class="nav-links" id="navLinks">
+        <!-- Students dropdown -->
+          <a class="link-btn" href="home.html">Home</a>
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Students <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="StudentReg.html">Student Registration</a>
+            <a href="attendance.html">Attendance</a>
+             
+          </div>
+        </div>
+
+        <!-- Faculty dropdown -->
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Faculty <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="faculty.html">Faculty Registration</a>
+            <a href="leave.html">Leave Apply</a>
+            <a href="leaveView.html">Leave View</a>
+          </div>
+        </div>
+
+        <!-- Timetable dropdown -->
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Time Table <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="TimetableForm.html">Add Time Table</a>
+            <a href="timetableview.html">Timetable View</a>
+          </div>
+        </div>
+
+       
+        <button class="btn" onclick="location.href='index.html'">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- FORM -->
+  <div class="form-container" id="mainForm">
     <h1>Add New Student</h1>
     <p class="subtitle">Fill in the form below to register a new student</p>
 
@@ -207,6 +318,60 @@
   </div>
 
   <script>
+    /* NAVBAR INTERACTIONS (hamburger + multiple dropdowns) */
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger?.addEventListener('click', () => navLinks.classList.toggle('show'));
+
+    document.querySelectorAll('.dropdown').forEach(drop => {
+      const toggle = drop.querySelector('.drop-toggle');
+      const menu = drop.querySelector('.drop-menu');
+      let hideTimer = null;
+
+      // desktop hover open
+      drop.addEventListener('mouseenter', () => {
+        if (window.innerWidth > 820) {
+          clearTimeout(hideTimer);
+          menu.classList.add('show');
+          toggle.setAttribute('aria-expanded', 'true');
+        }
+      });
+      // desktop delayed close
+      drop.addEventListener('mouseleave', () => {
+        if (window.innerWidth > 820) {
+          hideTimer = setTimeout(() => {
+            menu.classList.remove('show');
+            toggle.setAttribute('aria-expanded', 'false');
+          }, 180);
+        }
+      });
+
+      // click toggles (mobile + desktop)
+      toggle.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        clearTimeout(hideTimer);
+        const opened = menu.classList.toggle('show');
+        toggle.setAttribute('aria-expanded', opened ? 'true' : 'false');
+      });
+
+      // close when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!drop.contains(e.target)) {
+          menu.classList.remove('show');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // close on link click and collapse mobile nav
+      menu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          if (window.innerWidth <= 820) navLinks.classList.remove('show');
+          menu.classList.remove('show');
+        });
+      });
+    });
+
     // Preview uploaded image
     const photoInput = document.getElementById('stuPhoto');
     const previewBox = document.getElementById('avatarPreview');
@@ -230,10 +395,28 @@
     // Form submit
     document.getElementById('addStudentForm').addEventListener('submit', (e) => {
       e.preventDefault();
+      // Collect form values (you can store to localStorage or send to server here)
+      const student = {
+        id: document.getElementById('stuId').value.trim(),
+        name: document.getElementById('stuName').value.trim(),
+        age: document.getElementById('stuAge').value,
+        grade: document.getElementById('stuGrade').value,
+        email: document.getElementById('stuEmail').value.trim(),
+        createdAt: new Date().toISOString()
+      };
+      // Example: store to localStorage (keeps demo simple)
+      try {
+        const key = 'students';
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push(student);
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch (err) {
+        console.warn('Could not save to localStorage', err);
+      }
+
       alert('🎉 Student added successfully!');
-      window.location.href = 'index.html';
+      window.location.href = 'home.html';
     });
   </script>
-
 </body>
 </html>

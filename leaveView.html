@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Leave Review — Admin</title>
+  <style>
+    :root{
+      --accent:#2f8f3c;
+      --accent-2:#196b2a;
+      --muted:#57785d;
+      --bg:#f6fff7;
+      --card:#ffffff;
+      --border:#e6f4ea;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:linear-gradient(135deg,var(--bg),#ffffff);
+      margin:0;color:#0b3420;-webkit-font-smoothing:antialiased;
+    }
+    .wrap{max-width:980px;margin:36px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    h1{margin:0;color:var(--accent)}
+    .controls{display:flex;gap:8px;align-items:center}
+    input.search{padding:10px 12px;border-radius:10px;border:1px solid #dfefe1;min-width:240px}
+    .card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);box-shadow:0 12px 30px rgba(12,60,30,0.04);margin-bottom:12px}
+    .app-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .meta{color:#5a7e66;font-size:13px}
+    .status-pill{padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px}
+    .status-pending{background:#fff7e6;color:#b07a00;border:1px solid #ffeac0}
+    .status-approved{background:#ecfff0;color:#1a6b2b;border:1px solid #d7f0d9}
+    .status-cancelled{background:#fff0f0;color:#8a2b2b;border:1px solid #ffd6d6}
+    .actions{display:flex;gap:8px;align-items:center}
+    button.btn{padding:8px 10px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+    .btn-approve{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#fff}
+    .btn-cancel{background:#ffecec;color:#a33;border:1px solid #ffd6d6}
+    .btn-rearr{background:#fff;border:1px solid #d6eede;color:var(--accent)}
+    .btn-small{padding:6px 8px;border-radius:8px;font-weight:600}
+    .rearranged{margin-top:8px;padding:10px;border-radius:8px;background:#fbfff7;border:1px dashed #dbeedf;color:#235c3a;font-size:14px}
+    .muted{color:#6d8c75;font-size:13px}
+
+    /* modal */
+    .modal-back{position:fixed;inset:0;background:rgba(6,30,15,0.35);display:none;align-items:center;justify-content:center;padding:18px;z-index:200}
+    .modal-back.show{display:flex}
+    .modal{width:100%;max-width:760px;background:#fff;border-radius:12px;padding:18px;border:1px solid #e9f6ea;box-shadow:0 30px 80px rgba(6,30,18,.2)}
+    .fac-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
+    .fac-card{border-radius:10px;padding:10px;border:1px solid #eaf6ee;background:#fbfff7;display:flex;flex-direction:column;gap:8px}
+    .fac-card strong{color:#144a2b}
+    .fac-card .dept{color:#4c7d62;font-size:13px}
+    .modal-footer{margin-top:12px;display:flex;justify-content:flex-end;gap:8px}
+    .placeholder{color:#789b84;background:#fff; padding:12px;border-radius:10px;border:1px dashed #dbeedf}
+
+    @media(max-width:680px){
+      .fac-list{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Faculty Leave Review</h1>
+        <div class="muted">Review, approve or cancel leave applications. Reassign faculty for affected days.</div>
+      </div>
+
+      <div class="controls">
+        <input id="search" class="search" placeholder="Search by name, id, dept..." />
+        <button id="refresh" class="btn btn-rearr">Refresh</button>
+      </div>
+    </header>
+
+    <main id="list"></main>
+  </div>
+
+  <!-- Modal: Rearrangement chooser -->
+  <div class="modal-back" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Reassign Class for Leave</h3>
+      <p class="muted" id="modalDesc">Choose an available faculty to cover the absent teacher on the leave day.</p>
+
+      <div id="availableList" class="fac-list"></div>
+
+      <div class="modal-footer">
+        <button id="closeModal" class="btn btn-rearr">Close</button>
+        <button id="assignBtn" class="btn btn-approve">Assign Replacement</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Keys used in localStorage
+    const LEAVE_KEY = 'facultyLeaveApplications';
+    const REASSIGN_KEY = 'timetableReassignments';
+
+    // Dummy available faculty (you can replace with real data)
+    const dummyFaculty = [
+      { id:'F101', name:'Anita Verma', dept:'Mathematics' },
+      { id:'F102', name:'Ravi Kumar', dept:'Physics' },
+      { id:'F103', name:'Nisha R', dept:'English' },
+      { id:'F104', name:'Sandeep P', dept:'Computer Science' },
+      { id:'F105', name:'Maya G', dept:'Biology' },
+      { id:'F106', name:'Arjun S', dept:'Chemistry' }
+    ];
+
+    // DOM refs
+    const listEl = document.getElementById('list');
+    const search = document.getElementById('search');
+    const refreshBtn = document.getElementById('refresh');
+    const modalBg = document.getElementById('modal');
+    const availableList = document.getElementById('availableList');
+    const assignBtn = document.getElementById('assignBtn');
+    const closeModal = document.getElementById('closeModal');
+    const modalDesc = document.getElementById('modalDesc');
+
+    // state for modal
+    let currentAppId = null;
+    let selectedReplacement = null;
+
+    // helpers
+    function read(key){ try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
+    function write(key, v){ localStorage.setItem(key, JSON.stringify(v)); }
+
+    // render list
+    function render(filter=''){
+      const apps = read(LEAVE_KEY).slice().reverse(); // show newest first
+      listEl.innerHTML = '';
+      if(apps.length===0){
+        listEl.innerHTML = `<div class="placeholder card">No leave applications found. They will appear here after teachers submit leave requests.</div>`;
+        return;
+      }
+
+      const q = filter.trim().toLowerCase();
+      const filtered = apps.filter(a=>{
+        if(!q) return true;
+        return (a.name||'').toLowerCase().includes(q) || (a.empId||'').toLowerCase().includes(q) || (a.dept||'').toLowerCase().includes(q) || (a.leaveType||'').toLowerCase().includes(q);
+      });
+
+      if(filtered.length===0){
+        listEl.innerHTML = `<div class="placeholder card">No applications match your search.</div>`;
+        return;
+      }
+
+      // build UI cards
+      filtered.forEach(app=>{
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `
+          <div class="app-head">
+            <div>
+              <strong>${app.name || '(no name)'} — ${app.empId || ''}</strong>
+              <div class="meta">${app.dept || ''} • ${app.leaveType || ''} • ${app.from} → ${app.to} • ${app.days || '—'} day(s)</div>
+              <div style="margin-top:8px;color:#234f36">${app.reason || ''}</div>
+            </div>
+            <div style="text-align:right">
+              ${ statusPill(app.status || 'pending') }
+              <div style="margin-top:8px;font-size:12px;color:#6b8b74">${ new Date(app.createdAt || Date.now()).toLocaleString() }</div>
+            </div>
+          </div>
+        `;
+
+        // actions footer
+        const actions = document.createElement('div');
+        actions.style.marginTop = '12px';
+        actions.className = 'actions';
+
+        // Approve button (only if pending)
+        const approveBtn = document.createElement('button');
+        approveBtn.className = 'btn btn-approve btn-small';
+        approveBtn.textContent = 'Approve';
+        approveBtn.disabled = (app.status === 'approved');
+        approveBtn.addEventListener('click', ()=> handleApprove(app.id));
+
+        // Cancel button (unless already cancelled)
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-cancel btn-small';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.disabled = (app.status === 'cancelled');
+        cancelBtn.addEventListener('click', ()=> handleCancel(app.id));
+
+        // Rearrange button - allow even if approved (to arrange cover)
+        const rearrBtn = document.createElement('button');
+        rearrBtn.className = 'btn btn-rearr btn-small';
+        rearrBtn.textContent = 'Rearrange';
+        rearrBtn.addEventListener('click', ()=> openRearrangeModal(app));
+
+        actions.appendChild(approveBtn);
+        actions.appendChild(cancelBtn);
+        actions.appendChild(rearrBtn);
+
+        // Show current rearrangement if any
+        const reassignments = read(REASSIGN_KEY);
+        const assigned = reassignments.find(r => r.appId === app.id);
+        if(assigned){
+          const rdiv = document.createElement('div');
+          rdiv.className = 'rearranged';
+          rdiv.innerHTML = `<strong>Replacement:</strong> ${assigned.replacementName} (${assigned.replacementId}) for ${assigned.date} <div style="margin-top:6px" class="muted">Assigned at ${new Date(assigned.assignedAt).toLocaleString()}</div>`;
+          el.appendChild(rdiv);
+        }
+
+        // Add actions & append
+        el.appendChild(actions);
+        listEl.appendChild(el);
+      });
+    }
+
+    function statusPill(status){
+      const cls = status === 'approved' ? 'status-approved' : status === 'cancelled' ? 'status-cancelled' : 'status-pending';
+      return `<div class="status-pill ${cls}">${status.toUpperCase()}</div>`;
+    }
+
+    // handlers
+    function handleApprove(id){
+      if(!confirm('Approve this leave application?')) return;
+      const apps = read(LEAVE_KEY);
+      const idx = apps.findIndex(a => a.id === id);
+      if(idx === -1) return alert('Application not found.');
+      apps[idx].status = 'approved';
+      apps[idx].approvedAt = new Date().toISOString();
+      write(LEAVE_KEY, apps);
+      render(search.value);
+      alert('Application approved.');
+    }
+
+    function handleCancel(id){
+      if(!confirm('Cancel this leave application? This cannot be undone.')) return;
+      const apps = read(LEAVE_KEY);
+      const idx = apps.findIndex(a => a.id === id);
+      if(idx === -1) return alert('Application not found.');
+      apps[idx].status = 'cancelled';
+      apps[idx].cancelledAt = new Date().toISOString();
+      write(LEAVE_KEY, apps);
+      render(search.value);
+      alert('Application cancelled.');
+    }
+
+    // Rearrangement modal flow
+    function openRearrangeModal(app){
+      currentAppId = app.id;
+      selectedReplacement = null;
+      modalDesc.textContent = `Reassign cover for ${app.name} (${app.empId}) on ${app.from} → ${app.to}. Choose a replacement from available faculty below.`;
+      // filter available list by department (show same dept first)
+      const sameDept = dummyFaculty.filter(f => f.dept === app.dept);
+      const others = dummyFaculty.filter(f => f.dept !== app.dept);
+      const list = sameDept.concat(others);
+      renderAvailable(list, app);
+      modalBg.classList.add('show');
+    }
+
+    function renderAvailable(list, app){
+      availableList.innerHTML = '';
+      if(list.length === 0){
+        availableList.innerHTML = '<div class="placeholder">No available faculty found.</div>';
+        return;
+      }
+      list.forEach(f => {
+        const c = document.createElement('div');
+        c.className = 'fac-card';
+        c.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong>${f.name}</strong>
+              <div class="dept">${f.dept}</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:13px;color:#4c7d62">ID: ${f.id}</div>
+              <div style="margin-top:8px">
+                <button class="btn btn-rearr btn-small select-btn">Select</button>
+              </div>
+            </div>
+          </div>
+        `;
+        // select handler
+        c.querySelector('.select-btn').addEventListener('click', ()=>{
+          // mark selection visually
+          availableList.querySelectorAll('.fac-card').forEach(el=> el.style.boxShadow = '');
+          c.style.boxShadow = '0 6px 20px rgba(47,143,60,0.12)';
+          selectedReplacement = f;
+        });
+        availableList.appendChild(c);
+      });
+    }
+
+    assignBtn.addEventListener('click', ()=>{
+      if(!selectedReplacement){
+        return alert('Please select a replacement faculty first.');
+      }
+      // create reassignment record for each date in range (simple: we'll store one record for the from..to range)
+      const apps = read(LEAVE_KEY);
+      const app = apps.find(a => a.id === currentAppId);
+      if(!app) return alert('Original application not found.');
+      const reassignArr = read(REASSIGN_KEY);
+      const record = {
+        id: 'reassign_' + Date.now() + '_' + Math.floor(Math.random()*999),
+        appId: app.id,
+        originalId: app.empId,
+        originalName: app.name,
+        replacementId: selectedReplacement.id,
+        replacementName: selectedReplacement.name,
+        dept: selectedReplacement.dept,
+        date: app.from + (app.to && app.to !== app.from ? ' → ' + app.to : ''), // store date or range
+        assignedAt: new Date().toISOString()
+      };
+      reassignArr.push(record);
+      write(REASSIGN_KEY, reassignArr);
+
+      // also annotate the application so admin can see assigned replacement
+      const idx = apps.findIndex(a => a.id === app.id);
+      apps[idx].rearranged = true;
+      apps[idx].replacement = { id: selectedReplacement.id, name: selectedReplacement.name, assignedAt: record.assignedAt };
+      write(LEAVE_KEY, apps);
+
+      modalBg.classList.remove('show');
+      render(search.value);
+      alert('Replacement assigned: ' + selectedReplacement.name);
+    });
+
+    closeModal.addEventListener('click', ()=> { modalBg.classList.remove('show'); });
+
+    // refresh + search handlers
+    refreshBtn.addEventListener('click', ()=> render(search.value));
+    search.addEventListener('input', ()=> render(search.value));
+
+    // On load: ensure there is some demo data if none exist (so UI isn't empty)
+    (function seedIfEmpty(){
+      const existing = read(LEAVE_KEY);
+      if(existing.length === 0){
+        const demo = [
+          { id:'app_1', empId:'F001', name:'Dr. S K Sree', dept:'Mathematics', leaveType:'Sick Leave', from: getTodayOffset(1), to: getTodayOffset(1), days:1, reason:'Fever', createdAt: new Date().toISOString(), status:'pending' },
+          { id:'app_2', empId:'F002', name:'R. Menon', dept:'Physics', leaveType:'Casual Leave', from: getTodayOffset(3), to: getTodayOffset(4), days:2, reason:'Family work', createdAt: new Date().toISOString(), status:'pending' }
+        ];
+        write(LEAVE_KEY, demo);
+      }
+      // ensure reassign key exists
+      if(read(REASSIGN_KEY).length === 0) write(REASSIGN_KEY, []);
+      render();
+    })();
+
+    function getTodayOffset(days){
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      return d.toISOString().slice(0,10);
+    }
+  </script>
+</body>
+</html>

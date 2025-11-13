@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Faculty Leave Application — Indigo School</title>
+  <style>
+    :root{
+      --accent:#2f8f3c;
+      --accent-2:#196b2a;
+      --bg:#f2fff7;
+      --muted:#57785d;
+      --card:#ffffff;
+      --border:#e4f2e6;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(135deg,var(--bg),#ffffff);
+      color:#0b3420;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ---------------- NAVBAR ---------------- */
+    .navbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 20px;background:#fff;border-bottom:1px solid #e6f0ea;
+      position:sticky;top:0;z-index:150;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{
+      width:40px;height:40px;border-radius:8px;
+      background:linear-gradient(135deg,#3aa55a,#1f7a3b);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;color:white;
+    }
+    .brand h1{font-size:16px;margin:0}
+
+    .nav-right{display:flex;gap:12px;align-items:center}
+    .nav-links{display:flex;gap:12px;align-items:center}
+    .nav-links a, .nav-links button.link-btn{
+      padding:8px 12px;border-radius:8px;text-decoration:none;
+      color:#0b2a1a;cursor:pointer;background:transparent;border:0;
+    }
+    .nav-links a:hover{background:#eef7ee}
+
+    .btn{
+      background:linear-gradient(180deg,var(--accent),var(--accent-2));
+      color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;
+    }
+
+    /* Dropdown */
+    .dropdown{position:relative}
+    .drop-toggle{
+      display:flex;align-items:center;gap:6px;padding:8px 12px;
+      border-radius:8px;border:0;background:transparent;cursor:pointer;
+    }
+    .drop-toggle:hover{background:#eef7ee}
+    .caret{font-size:12px}
+
+    .drop-menu{
+      display:none;position:absolute;top:110%;left:0;
+      background:#fff;border-radius:10px;border:1px solid #e6f2ea;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);overflow:hidden;z-index:999;
+      min-width:200px;
+    }
+    .drop-menu.show{display:block}
+
+    .drop-menu a{
+      display:block;padding:10px;text-decoration:none;color:#0b2a1a;
+      border-bottom:1px solid #f1f6f3;
+    }
+    .drop-menu a:hover{background:#eef7ee}
+    .drop-menu a:last-child{border-bottom:0}
+
+    .hamburger{display:none;background:transparent;border:0;font-size:20px}
+
+    /* Mobile */
+    @media(max-width:820px){
+      .hamburger{display:block}
+      .nav-links{
+        display:none;flex-direction:column;position:absolute;right:12px;top:60px;
+        background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);
+        min-width:220px;
+      }
+      .nav-links.show{display:flex}
+      .drop-menu{position:static;border:0;box-shadow:none}
+      .drop-menu a{background:#fff;border-radius:8px;margin-bottom:4px}
+    }
+
+    /* ---------------- Page Content ---------------- */
+    .wrap{max-width:720px;margin:48px auto;padding:20px}
+    .card{background:var(--card);border-radius:14px;padding:24px;border:1px solid var(--border);box-shadow:0 14px 40px rgba(15,65,30,0.05)}
+    h1{color:var(--accent);margin:0 0 6px;font-size:22px}
+    p.lead{margin:0 0 16px;color:var(--muted)}
+    form{display:flex;flex-direction:column;gap:16px}
+    label{display:block;font-weight:600;color:#1a4a2b;margin-bottom:6px}
+    input,select,textarea{
+      width:100%;padding:12px 14px;border-radius:12px;
+      border:1.5px solid #dcefe0;background:#fbfffc;font-size:15px;
+      outline:none;transition:.2s;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(47,143,60,.12)}
+    textarea{min-height:110px;resize:vertical}
+    .small{font-size:13px;color:#6d8c75}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .file-preview{
+      width:120px;height:80px;border-radius:8px;border:1px dashed #cfe7d3;background:#f7fff7;
+      display:flex;align-items:center;justify-content:center;color:#2f7b46;font-size:13px
+    }
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px}
+    .btn-primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#fff}
+    .btn-ghost{background:#fff;border:1.5px solid #d6eede;color:var(--accent)}
+    .apps-list{margin-top:18px;border-top:1px dashed #e6f2ea;padding-top:12px}
+    .app-item{padding:10px;border-radius:10px;border:1px solid #eef8ef;background:#fbfffb;margin-bottom:10px}
+  </style>
+</head>
+<body>
+
+  <!-- ---------------- NAVBAR ---------------- -->
+   <!-- NAVBAR -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h1> School</h1>
+        <div style="font-size:12px;color:#55775a">Admin dashboard</div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="menu">☰</button>
+
+      <div class="nav-links" id="navLinks">
+        <!-- Students dropdown -->
+          <a class="link-btn" href="home.html">Home</a>
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Students <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="StudentReg.html">Student Registration</a>
+            <a href="attendance.html">Attendance</a>
+             
+          </div>
+        </div>
+
+        <!-- Faculty dropdown -->
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Faculty <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="faculty.html">Faculty Registration</a>
+            <a href="leave.html">Leave Apply</a>
+            <a href="leaveView.html">Leave View</a>
+          </div>
+        </div>
+
+        <!-- Timetable dropdown -->
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Time Table <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="TimetableForm.html">Add Time Table</a>
+            <a href="timetableview.html">Timetable View</a>
+          </div>
+        </div>
+
+       
+        <button class="btn" onclick="location.href='index.html'">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ---------------- PAGE CONTENT ---------------- -->
+  <div class="wrap">
+    <div class="card">
+      <h1>Faculty Leave Application</h1>
+      <p class="lead">Submit your leave request. Saved locally (demo).</p>
+
+      <form id="leaveForm">
+        <div>
+          <label>Employee ID *</label>
+          <input id="f-id" type="text" required />
+        </div>
+
+        <div>
+          <label>Full Name *</label>
+          <input id="f-name" type="text" required />
+        </div>
+
+        <div>
+          <label>Department *</label>
+          <select id="f-dept" required>
+            <option value="">Select department</option>
+            <option>Mathematics</option>
+            <option>Physics</option>
+            <option>Chemistry</option>
+            <option>Biology</option>
+            <option>Computer Science</option>
+            <option>English</option>
+            <option>History</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Leave Type *</label>
+          <select id="leave-type" required>
+            <option value="">Select leave type</option>
+            <option>Sick Leave</option>
+            <option>Casual Leave</option>
+            <option>Earned Leave</option>
+            <option>Maternity/Paternity</option>
+            <option>Special Leave</option>
+          </select>
+        </div>
+
+        <div>
+          <label>From *</label>
+          <input id="from-date" type="date" required />
+        </div>
+
+        <div>
+          <label>To *</label>
+          <input id="to-date" type="date" required />
+        </div>
+
+        <div>
+          <label>Number of Days</label>
+          <input id="days" type="number" />
+          <div class="small">Will auto-calc if empty.</div>
+        </div>
+
+        <div>
+          <label>Reason *</label>
+          <textarea id="reason" required></textarea>
+        </div>
+
+        <div>
+          <label>Attachment</label>
+          <div class="row">
+            <div class="file-preview" id="filePreview">No file</div>
+            <input type="file" id="attach" accept=".pdf,image/*">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-ghost" type="button" onclick="history.back()">← Back</button>
+          <button class="btn-primary" type="submit">Submit</button>
+        </div>
+      </form>
+
+      <div id="appsList" class="apps-list"></div>
+
+    </div>
+  </div>
+
+<script>
+/* ---------------- NAVBAR SCRIPT ---------------- */
+const hamburger=document.getElementById("hamburger");
+const navLinks=document.getElementById("navLinks");
+hamburger.addEventListener("click",()=>navLinks.classList.toggle("show"));
+
+document.querySelectorAll(".dropdown").forEach(drop=>{
+  const btn=drop.querySelector(".drop-toggle");
+  const menu=drop.querySelector(".drop-menu");
+  let timer=null;
+
+  drop.addEventListener("mouseenter",()=>{
+    if(window.innerWidth>820){clearTimeout(timer);menu.classList.add("show");}
+  });
+  drop.addEventListener("mouseleave",()=>{
+    if(window.innerWidth>820){
+      timer=setTimeout(()=>menu.classList.remove("show"),150);
+    }
+  });
+  btn.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    menu.classList.toggle("show");
+  });
+  document.addEventListener("click",(e)=>{
+    if(!drop.contains(e.target)) menu.classList.remove("show");
+  });
+});
+
+
+/* -------------- LEAVE FORM LOGIC (your original logic) -------------- */
+
+// LocalStorage key
+const KEY='facultyLeaveApplications';
+
+function read(){try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch{ return [];}}
+function write(v){localStorage.setItem(KEY,JSON.stringify(v));}
+
+const list=document.getElementById("appsList");
+
+function render(){
+  const arr=read();
+  list.innerHTML="<h3 style='margin:0 0 10px;color:#1e7a42'>Saved Applications</h3>";
+  if(!arr.length){list.innerHTML+="<div class='small'>No applications yet.</div>";return;}
+
+  arr.slice().reverse().forEach(a=>{
+    const el=document.createElement("div");
+    el.className="app-item";
+    el.innerHTML=`
+      <strong>${a.name} (${a.empId})</strong><br>
+      <span class="small">${a.dept} • ${a.type} • ${a.from} → ${a.to} (${a.days} days)</span><br><br>
+      <button class="btn-ghost" data-id="${a.id}">Delete</button>
+    `;
+    el.querySelector("button").onclick=()=>{
+      write(read().filter(x=>x.id!==a.id));
+      render();
+    }
+    list.appendChild(el);
+  });
+}
+render();
+
+document.getElementById("leaveForm").onsubmit=function(e){
+  e.preventDefault();
+  const emp=document.getElementById("f-id").value.trim();
+  const name=document.getElementById("f-name").value.trim();
+  const dept=document.getElementById("f-dept").value;
+  const type=document.getElementById("leave-type").value;
+  const from=document.getElementById("from-date").value;
+  const to=document.getElementById("to-date").value;
+  const reason=document.getElementById("reason").value.trim();
+  const file=document.getElementById("attach").files[0]?.name||"";
+  let days=document.getElementById("days").value;
+
+  if(!days){
+    const d1=new Date(from),d2=new Date(to);
+    days=((d2-d1)/(1000*60*60*24))+1;
+  }
+
+  write([...read(),{
+    id:Date.now(),
+    empId:emp,name,dept,type,from,to,days,reason,file
+  }]);
+
+  alert("Leave Submitted!");
+  e.target.reset();
+  render();
+};
+</script>
+
+</body>
+</html>

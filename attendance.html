@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Attendance — Indigo School</title>
+  <style>
+    :root{
+      --accent:#2f8f3c; --accent-2:#196b2a; --muted:#57785d;
+      --bg:#f2fff7; --card:#ffffff; --border:#e4f2e6;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:Inter,system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background:linear-gradient(135deg,var(--bg),#ffffff);
+      color:#07341f;margin:0;padding:0;-webkit-font-smoothing:antialiased;
+    }
+
+    /* NAVBAR */
+    .navbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 18px;background:#fff;border-bottom:1px solid #e6f0ea;
+      position:sticky;top:0;z-index:120;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{
+      width:40px;height:40px;border-radius:8px;
+      background:linear-gradient(135deg,#3aa55a,#1f7a3b);
+      display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;
+    }
+    .brand h1{font-size:16px;margin:0}
+    .nav-right{display:flex;gap:12px;align-items:center}
+    .nav-links{display:flex;gap:12px;align-items:center}
+    .nav-links a, .nav-links button.link-btn{
+      padding:8px 12px;border-radius:8px;text-decoration:none;color:#0b2a1a;background:transparent;border:0;cursor:pointer;
+    }
+    .nav-links a:hover{background:#eef7ee}
+
+    /* DROPDOWN (classes to allow multiples) */
+    .dropdown{position:relative}
+    .drop-toggle{
+      display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 12px;border-radius:8px;background:transparent;border:0;
+    }
+    .drop-toggle:hover{background:#eef7ee}
+    .caret{font-size:12px;color:#175a33}
+    .drop-menu{
+      position:absolute;top:calc(100% + 8px);left:0;min-width:200px;background:#fff;border-radius:8px;
+      box-shadow:0 10px 30px rgba(6,30,15,.08);border:1px solid #e6f2ea;overflow:hidden;display:none;z-index:60;
+    }
+    .drop-menu.show{display:block}
+    .drop-menu a{display:block;padding:10px 12px;text-decoration:none;color:#0b2a1a;border-bottom:1px solid #f0f6f3}
+    .drop-menu a:last-child{border-bottom:0}
+    .drop-menu a:hover{background:#f6fff5}
+
+    .btn{
+      background:linear-gradient(180deg,var(--accent),var(--accent-2));
+      color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;
+    }
+
+    .hamburger{display:none;background:transparent;border:0;font-size:20px}
+    @media (max-width:820px){
+      .nav-links{
+        display:none;position:absolute;right:12px;top:56px;
+        flex-direction:column;background:#fff;padding:12px;border-radius:8px;
+        box-shadow:0 6px 18px rgba(6,30,15,.06);min-width:220px;
+      }
+      .hamburger{display:block}
+      .nav-links.show{display:flex}
+      .drop-menu{position:static;box-shadow:none;border:0;padding:0;background:transparent}
+      .drop-menu a{background:#fff;border-radius:8px;margin-bottom:6px;border-bottom:0}
+    }
+
+    /* PAGE STYLES (kept from original) */
+    .container{max-width:920px;margin:36px auto;padding:20px}
+    .card{background:var(--card);border-radius:14px;padding:18px;border:1px solid var(--border);box-shadow:0 12px 30px rgba(12,60,30,0.04);margin-bottom:14px}
+    h1{margin:0 0 6px;color:var(--accent)}
+    p.lead{margin:0 0 12px;color:var(--muted)}
+    form{display:flex;flex-direction:column;gap:12px}
+    label{display:block;font-weight:600;color:#1a4a2b;margin-bottom:6px}
+    select,input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid #dcefe0;background:#fbfffc;font-size:15px;transition:all .18s;outline:none}
+    select:hover,input:hover{border-color:#bfe3c6;background:#fff}
+    select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(47,143,60,.12)}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn-ghost{background:#fff;border:1.5px solid #d6eede;color:var(--accent);padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn-primary{padding:10px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:700;background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#fff}
+    .students{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+    .student-row{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;border:1px solid #eef7ee;background:#fbfff8}
+    .student-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .student-meta{font-weight:700;color:#154f2f}
+    .student-sub{color:#5e8169;font-size:13px}
+    .attendance-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .radio-group{display:flex;gap:8px;align-items:center}
+    textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #e1efe1;background:#fcfffd;resize:vertical}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px}
+    .muted{color:#6d8c75;font-size:13px}
+    .records{margin-top:14px}
+    .record-item{padding:10px;border-radius:10px;border:1px solid #eaf6ee;background:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .small-btn{padding:6px 8px;border-radius:8px;border:0;cursor:pointer}
+    @media(max-width:720px){ .student-top{flex-direction:column;align-items:flex-start} .attendance-controls{flex-direction:column;align-items:flex-start} }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h1>School</h1>
+        <div style="font-size:12px;color:#55775a">Admin dashboard</div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="menu">☰</button>
+
+      <div class="nav-links" id="navLinks" role="navigation" aria-label="Main navigation">
+        <a class="link-btn" href="home.html">Home</a>
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Students <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="StudentReg.html">Student Registration</a>
+            <a href="attendance.html">Attendance</a>
+            <a href="StudentView.html">Student View</a>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Faculty <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="faculty.html">Faculty Registration</a>
+            <a href="leave.html">Leave Apply</a>
+            <a href="leaveView.html">Leave View</a>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Time Table <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="TimetableForm.html">Add Time Table</a>
+            <a href="timetableview.html">Timetable View</a>
+          </div>
+        </div>
+
+        <button class="btn" onclick="location.href='index.html'">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <div class="container">
+    <div class="card" role="region" aria-labelledby="title">
+      <h1 id="title">Student Attendance</h1>
+      <p class="lead">Mark attendance for students — select class and date, then save. Records are stored locally (demo).</p>
+
+      <form id="attForm" onsubmit="return false">
+        <div>
+          <label for="classSelect">Class *</label>
+          <select id="classSelect" required>
+            <option value="">-- Select class --</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="attDate">Date *</label>
+          <input id="attDate" type="date" required />
+        </div>
+
+        <div class="controls">
+          <button id="loadBtn" class="btn-ghost" type="button">Load Students</button>
+          <button id="loadSaved" class="btn-ghost" type="button">Load Saved Record</button>
+          <div style="flex:1" class="muted">After loading students, mark Present/Absent and Save.</div>
+        </div>
+
+        <div id="studentsContainer" class="students" aria-live="polite">
+          <!-- student rows injected here -->
+        </div>
+
+        <div class="footer">
+          <div class="muted">Tip: fields are single-column for clarity.</div>
+          <div style="display:flex;gap:8px">
+            <button id="exportCsv" class="btn-ghost" type="button">Export CSV</button>
+            <button id="saveBtn" class="btn-primary" type="button">Save Attendance</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card records">
+      <h3 style="margin:0 0 10px;color:#1e7a42">Saved Attendance Records</h3>
+      <div id="recordsList"></div>
+    </div>
+  </div>
+
+<script>
+  /* NAVBAR INTERACTIONS (hamburger + multiple dropdowns) */
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+  hamburger?.addEventListener('click', () => navLinks.classList.toggle('show'));
+
+  document.querySelectorAll('.dropdown').forEach(drop => {
+    const toggle = drop.querySelector('.drop-toggle');
+    const menu = drop.querySelector('.drop-menu');
+    let hideTimer = null;
+
+    // desktop hover open
+    drop.addEventListener('mouseenter', () => {
+      if (window.innerWidth > 820) {
+        clearTimeout(hideTimer);
+        menu.classList.add('show');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+    // desktop delayed close
+    drop.addEventListener('mouseleave', () => {
+      if (window.innerWidth > 820) {
+        hideTimer = setTimeout(() => {
+          menu.classList.remove('show');
+          toggle.setAttribute('aria-expanded', 'false');
+        }, 180);
+      }
+    });
+
+    // click toggles (mobile + desktop)
+    toggle.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      clearTimeout(hideTimer);
+      const opened = menu.classList.toggle('show');
+      toggle.setAttribute('aria-expanded', opened ? 'true' : 'false');
+    });
+
+    // close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!drop.contains(e.target)) {
+        menu.classList.remove('show');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // close on link click and collapse mobile nav
+    menu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        if (window.innerWidth <= 820) navLinks.classList.remove('show');
+        menu.classList.remove('show');
+      });
+    });
+  });
+
+  /* ---------------------------
+     ATTENDANCE PAGE JS
+  ----------------------------*/
+  // Keys
+  const STUD_KEY = 'students'; // optional students saved elsewhere in app
+  const ATT_KEY = 'studentAttendance'; // will store attendance records
+
+  // DOM refs
+  const classSelect = document.getElementById('classSelect');
+  const attDate = document.getElementById('attDate');
+  const loadBtn = document.getElementById('loadBtn');
+  const studentsContainer = document.getElementById('studentsContainer');
+  const saveBtn = document.getElementById('saveBtn');
+  const recordsList = document.getElementById('recordsList');
+  const loadSaved = document.getElementById('loadSaved');
+  const exportCsv = document.getElementById('exportCsv');
+
+  // demo students with grade field (dummy data per class)
+  const demoStudents = [
+    { id: 'S0081', name: 'Aanya Sharma', age:14, grade:'8' },
+     { id: 'S0091', name: 'Ram', age:14, grade:'8' },
+    { id: 'S0082', name: 'Vikram Das', age:13, grade:'8' },
+    { id: 'S0091', name: 'Rahul Nair', age:15, grade:'9' },
+    { id: 'S0092', name: 'Megha Iyer', age:14, grade:'9' },
+    { id: 'S0101', name: 'Neha Gupta', age:16, grade:'10' },
+    { id: 'S0102', name: 'Arjun Menon', age:15, grade:'10' },
+    { id: 'S0111', name: 'Karan Patel', age:17, grade:'11' },
+    { id: 'S0112', name: 'Meera Joshi', age:16, grade:'11' }
+  ];
+
+  // helpers to read/write localStorage
+  function read(key){ try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
+  function write(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+  // load students (either from localStorage STUD_KEY or demo) - now filters by class
+  function getStudentsForClass(cls){
+    // attempt to read stored students
+    const stored = read(STUD_KEY);
+    if(stored && stored.length){
+      const filtered = stored.filter(s => String(s.grade) === String(cls));
+      if(filtered.length) return filtered;
+      // if stored list exists but no one for this grade, fall back to demo below
+    }
+    // fallback demo: filter demoStudents by class (grade)
+    const filteredDemo = demoStudents.filter(s => String(s.grade) === String(cls));
+    return filteredDemo.length ? filteredDemo : demoStudents;
+  }
+
+  // render students UI
+  function renderStudents(list){
+    studentsContainer.innerHTML = '';
+    if(!list || !list.length){
+      studentsContainer.innerHTML = '<div class="muted">No students found for this class.</div>';
+      return;
+    }
+    list.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'student-row';
+      row.dataset.sid = s.id;
+      row.innerHTML = `
+        <div class="student-top">
+          <div>
+            <div class="student-meta">${s.name} <span style="font-weight:600;color:#55775a">(${s.id})</span></div>
+            <div class="student-sub">Grade: ${s.grade || '-' } • Age: ${s.age || '-'}</div>
+          </div>
+          <div>
+            <div class="attendance-controls">
+              <div class="radio-group">
+                <label><input type="radio" name="att_${s.id}" value="present" checked> Present</label>
+                <label><input type="radio" name="att_${s.id}" value="absent"> Absent</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>Remark (optional)</label>
+          <textarea placeholder="e.g. Late / Medical note" class="remark"></textarea>
+        </div>
+      `;
+      studentsContainer.appendChild(row);
+    });
+  }
+
+  // build attendance payload from UI
+  function collectAttendance(){
+    const cls = classSelect.value;
+    const date = attDate.value;
+    if(!cls || !date){ alert('Please choose class and date.'); return null; }
+    const rows = studentsContainer.querySelectorAll('.student-row');
+    const records = [];
+    rows.forEach(r => {
+      const sid = r.dataset.sid;
+      const name = r.querySelector('.student-meta').textContent.split(' (')[0].trim();
+      const radios = r.querySelectorAll(`input[name="att_${sid}"]`);
+      let status = 'present';
+      radios.forEach(rd => { if(rd.checked) status = rd.value; });
+      const remark = r.querySelector('.remark').value.trim();
+      records.push({ id: sid, name, status, remark });
+    });
+    return { class: cls, date, records, savedAt: new Date().toISOString() };
+  }
+
+  // save attendance to storage (keyed by class|date)
+  function saveAttendance(){
+    const payload = collectAttendance();
+    if(!payload) return;
+    const store = read(ATT_KEY) || [];
+    const existingIndex = store.findIndex(r => r.class === payload.class && r.date === payload.date);
+    if(existingIndex !== -1) store.splice(existingIndex, 1, payload);
+    else store.push(payload);
+    write(ATT_KEY, store);
+    alert('Attendance saved locally.');
+    renderRecords();
+  }
+
+  // render saved records list
+  function renderRecords(){
+    const store = read(ATT_KEY);
+    recordsList.innerHTML = '';
+    if(!store.length){
+      recordsList.innerHTML = `<div class="muted">No attendance records saved yet.</div>`;
+      return;
+    }
+    store.slice().reverse().forEach(rec => {
+      const el = document.createElement('div');
+      el.className = 'record-item';
+      el.innerHTML = `
+        <div>
+          <strong>Class ${rec.class}</strong>
+          <div class="muted">${rec.date} — ${rec.records.length} students • saved ${new Date(rec.savedAt).toLocaleString()}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="small-btn btn-ghost" data-action="view" data-class="${rec.class}" data-date="${rec.date}">View</button>
+          <button class="small-btn btn-ghost" data-action="delete" data-class="${rec.class}" data-date="${rec.date}">Delete</button>
+        </div>
+      `;
+      recordsList.appendChild(el);
+    });
+  }
+
+  // load saved record into UI
+  function loadSavedRecord(){
+    const cls = classSelect.value;
+    const date = attDate.value;
+    if(!cls || !date){ alert('Please select class and date first'); return; }
+    const store = read(ATT_KEY);
+    const found = store.find(r => r.class === cls && r.date === date);
+    if(!found){ alert('No saved record for this class & date'); return; }
+    const students = found.records.map(rec => ({ id: rec.id, name: rec.name, grade: cls })); // synthetic for UI
+    renderStudents(students);
+    setTimeout(()=>{
+      found.records.forEach(rec => {
+        const r = studentsContainer.querySelector(`.student-row[data-sid="${rec.id}"]`);
+        if(r){
+          const radio = r.querySelector(`input[name="att_${rec.id}"][value="${rec.status}"]`);
+          if(radio) radio.checked = true;
+          r.querySelector('.remark').value = rec.remark || '';
+        }
+      });
+    }, 30);
+  }
+
+  // export CSV for selected class & date
+  function exportCSV(){
+    const cls = classSelect.value;
+    const date = attDate.value;
+    if(!cls || !date){ alert('Select class & date to export'); return; }
+    const store = read(ATT_KEY);
+    const found = store.find(r => r.class === cls && r.date === date);
+    if(!found){ alert('No record to export'); return; }
+    const rows = [['Student ID','Name','Status','Remark']];
+    found.records.forEach(rec => rows.push([rec.id, rec.name, rec.status, rec.remark || '']));
+    const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance_class${cls}_${date}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // delete record
+  function deleteRecord(cls, date){
+    if(!confirm('Delete the saved attendance record?')) return;
+    const store = read(ATT_KEY);
+    const idx = store.findIndex(r => r.class === cls && r.date === date);
+    if(idx === -1) return alert('Record not found.');
+    store.splice(idx,1);
+    write(ATT_KEY, store);
+    renderRecords();
+  }
+
+  // wire events
+  loadBtn.addEventListener('click', () => {
+    const cls = classSelect.value;
+    const date = attDate.value;
+    if(!cls || !date){ alert('Please select class and date first'); return; }
+    const students = getStudentsForClass(cls);
+    renderStudents(students);
+  });
+
+  // Auto-load students when a class is selected
+  classSelect.addEventListener('change', () => {
+    const cls = classSelect.value;
+    if(!cls){
+      studentsContainer.innerHTML = '<div class="muted">Select a class to load students.</div>';
+      return;
+    }
+    const students = getStudentsForClass(cls);
+    renderStudents(students);
+  });
+
+  saveBtn.addEventListener('click', saveAttendance);
+  loadSaved.addEventListener('click', loadSavedRecord);
+  exportCsv.addEventListener('click', exportCSV);
+
+  // handle clicks in record list (view / delete)
+  recordsList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    const action = btn.dataset.action;
+    const cls = btn.dataset.class;
+    const date = btn.dataset.date;
+    if(action === 'view'){
+      classSelect.value = cls;
+      attDate.value = date;
+      loadSavedRecord();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if(action === 'delete'){
+      deleteRecord(cls, date);
+    }
+  });
+
+  // initial render of saved records
+  renderRecords();
+
+  // convenience: set today's date by default
+  (function setDefaultDate(){
+    const d = new Date();
+    const dd = d.toISOString().slice(0,10);
+    attDate.value = dd;
+  })();
+
+  // expose function to other pages if they want to pre-fill (optional)
+  window.attendance_app = {
+    getRecords: () => read(ATT_KEY),
+    getStudentsForClass
+  };
+</script>
+</body>
+</html>

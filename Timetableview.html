@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Timetable View — Indigo School</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:#f6faf7;color:#0b2a1a;line-height:1.4}
+    /* NAVBAR (consistent with your other pages) */
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#fff;border-bottom:1px solid #e6f0ea;position:sticky;top:0;z-index:120}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#3aa55a,#1f7a3b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .brand h1{font-size:16px;margin:0}
+    .nav-right{display:flex;gap:12px;align-items:center}
+    .nav-links{display:flex;gap:12px;align-items:center}
+    .link-btn, .drop-toggle{padding:8px 12px;border-radius:8px;background:transparent;border:0;cursor:pointer;color:#0b2a1a}
+    .drop-toggle:hover,.link-btn:hover{background:#eef7ee}
+    .btn{background:linear-gradient(180deg,#2f8f3c,#196b2a);color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+
+    /* dropdown */
+    .dropdown{position:relative}
+    .drop-menu{position:absolute;top:calc(100% + 8px);left:0;min-width:200px;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(6,30,15,.08);border:1px solid #e6f2ea;overflow:hidden;display:none}
+    .drop-menu.show{display:block}
+    .drop-menu a{display:block;padding:10px 12px;color:#0b2a1a;text-decoration:none;border-bottom:1px solid #f0f6f3}
+    .drop-menu a:last-child{border-bottom:0}
+    .drop-menu a:hover{background:#f6fff5}
+
+    /* layout */
+    .container{max-width:980px;margin:32px auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+    .card{background:#fff;padding:16px;border-radius:12px;border:1px solid #e9f4ea;box-shadow:0 8px 28px rgba(6,30,15,.03)}
+    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    label.small{font-size:13px;color:#55775a}
+    select{padding:8px;border-radius:8px;border:1px solid #dcefe0}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    thead th{background:#f3fbf5;color:#16572f;padding:10px;border-bottom:2px solid #e6f2ea;text-align:center}
+    tbody td{padding:10px;border-bottom:1px solid #f1f6f3;text-align:center;cursor:pointer}
+    tbody tr:hover{background:#fbfffd}
+    .time-col{width:110px;text-align:center;color:#385f3e;font-weight:700}
+    .hint{font-size:13px;color:#6d8c75}
+
+    .actions{display:flex;gap:8px;align-items:center}
+    .btn-ghost{background:#fff;border:1.5px solid #d6eede;color:#2f8f3c;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .muted{color:#6d8c75;font-size:13px}
+
+    @media(max-width:720px){
+      .time-col{width:80px}
+      .controls{flex-direction:column;align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h1>School</h1>
+        <div style="font-size:12px;color:#55775a">Admin dashboard</div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-links" id="navLinks" role="navigation">
+        <a class="link-btn" href="home.html">Home</a>
+
+        <div class="dropdown">
+          <button class="drop-toggle">Students ▾</button>
+          <div class="drop-menu">
+            <a href="StudentReg.html">Student Registration</a>
+            <a href="StudentView.html">Student View</a>
+            <a href="attendance.html">Attendance</a>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="drop-toggle">Faculty ▾</button>
+          <div class="drop-menu">
+            <a href="faculty.html">Faculty Registration</a>
+            <a href="leave.html">Leave Apply</a>
+            <a href="leaveView.html">Leave View</a>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="drop-toggle">Time Table ▾</button>
+          <div class="drop-menu">
+            <a href="TimetableForm.html">Add Time Table</a>
+            <a href="timetableview.html">Timetable View</a>
+          </div>
+        </div>
+
+        <button class="btn" onclick="location.href='index.html'">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="card" aria-labelledby="ttTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2 id="ttTitle" style="margin:0;color:#235c3a">Timetable Viewer</h2>
+          <div class="muted" style="margin-top:6px">Select a class to view or edit its weekly timetable. Click any cell to change subject.</div>
+        </div>
+
+        <div class="controls">
+          <label class="small" for="classSelect">Show class:</label>
+          <select id="classSelect" aria-label="Select class">
+            <option value="">-- Select class --</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+          </select>
+
+          <div class="actions" style="margin-left:8px">
+            <button id="loadSaved" class="btn-ghost" title="Load saved timetable">Load Saved</button>
+            <button id="saveBtn" class="btn" title="Save timetable">Save Timetable</button>
+            <button id="exportJson" class="btn-ghost" title="Export JSON">Export JSON</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;overflow:auto">
+        <table id="ttTable" class="timetable" role="table" aria-label="Class timetable">
+          <thead>
+            <tr>
+              <th class="time-col">Time</th>
+              <th>Monday</th>
+              <th>Tuesday</th>
+              <th>Wednesday</th>
+              <th>Thursday</th>
+              <th>Friday</th>
+            </tr>
+          </thead>
+          <tbody id="ttBody">
+            <!-- rows injected here -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hint" style="margin-top:10px">Tip: changes are kept in memory; click Save to persist for the selected class.</div>
+    </section>
+  </main>
+
+<script>
+  // localStorage key
+  const STORAGE_KEY = 'timetableData';
+
+  // demo default timetables
+  const demo = {
+    '8': [
+      {time:'08:30 - 09:15', mon:'Math', tue:'Science', wed:'English', thu:'Social', fri:'PE'},
+      {time:'09:20 - 10:05', mon:'English', tue:'Math', wed:'Art', thu:'Science', fri:'Music'},
+      {time:'10:20 - 11:05', mon:'Computer', tue:'History', wed:'Math', thu:'English', fri:'Library'},
+      {time:'11:10 - 11:55', mon:'Science', tue:'English', wed:'Social', thu:'Math', fri:'Assembly'}
+    ],
+    '9': [
+      {time:'08:30 - 09:15', mon:'Math', tue:'Physics', wed:'English', thu:'Chemistry', fri:'PE'},
+      {time:'09:20 - 10:05', mon:'English', tue:'Math', wed:'Biology', thu:'History', fri:'Art'},
+      {time:'10:20 - 11:05', mon:'Science', tue:'Computer', wed:'Math', thu:'Geography', fri:'Music'},
+      {time:'11:10 - 11:55', mon:'History', tue:'English', wed:'Physics', thu:'Math', fri:'Assembly'}
+    ],
+    '10': [
+      {time:'08:30 - 09:15', mon:'Physics', tue:'Math', wed:'Chemistry', thu:'English', fri:'PE'},
+      {time:'09:20 - 10:05', mon:'Math', tue:'Biology', wed:'History', thu:'Physics', fri:'Art'},
+      {time:'10:20 - 11:05', mon:'Computer', tue:'Chemistry', wed:'Math', thu:'English', fri:'Music'},
+      {time:'11:10 - 11:55', mon:'English', tue:'Physics', wed:'Geography', thu:'Math', fri:'Assembly'}
+    ],
+    '11': [
+      {time:'08:30 - 09:15', mon:'Calculus', tue:'Physics', wed:'Economics', thu:'Chemistry', fri:'PE'},
+      {time:'09:20 - 10:05', mon:'Physics', tue:'Calculus', wed:'English', thu:'Biology', fri:'Art'},
+      {time:'10:20 - 11:05', mon:'Computer', tue:'Chemistry', wed:'Math', thu:'Economics', fri:'Music'},
+      {time:'11:10 - 11:55', mon:'English', tue:'Physics', wed:'Geography', thu:'Calculus', fri:'Assembly'}
+    ]
+  };
+
+  // helpers for storage
+  function readAll(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e){ return {}; }
+  }
+  function writeAll(obj){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+  }
+
+  // DOM
+  const classSelect = document.getElementById('classSelect');
+  const ttBody = document.getElementById('ttBody');
+  const saveBtn = document.getElementById('saveBtn');
+  const loadSavedBtn = document.getElementById('loadSaved');
+  const exportJsonBtn = document.getElementById('exportJson');
+
+  // currently active timetable in memory (array of rows)
+  let currentClass = '';
+  let currentTimetable = [];
+
+  // Render helper
+  function renderTableForClass(cls){
+    currentClass = cls;
+    ttBody.innerHTML = '';
+    if(!cls){
+      ttBody.innerHTML = '<tr><td class="time-col">--</td><td colspan="5" class="muted">Please select a class from the dropdown above to view its timetable.</td></tr>';
+      currentTimetable = [];
+      return;
+    }
+    const store = readAll();
+    const data = store[cls] || demo[cls] || [];
+    // deep copy so editing doesn't mutate stored object until saved
+    currentTimetable = data.map(r => Object.assign({}, r));
+    if(currentTimetable.length === 0){
+      ttBody.innerHTML = '<tr><td class="time-col">--</td><td colspan="5" class="muted">No timetable data for this class.</td></tr>';
+      return;
+    }
+    // inject rows
+    currentTimetable.forEach((row, rIdx) => {
+      const tr = document.createElement('tr');
+      tr.dataset.r = rIdx;
+      tr.innerHTML = `
+        <td class="time-col">${escapeHtml(row.time || '')}</td>
+        <td data-day="mon">${escapeHtml(row.mon || '')}</td>
+        <td data-day="tue">${escapeHtml(row.tue || '')}</td>
+        <td data-day="wed">${escapeHtml(row.wed || '')}</td>
+        <td data-day="thu">${escapeHtml(row.thu || '')}</td>
+        <td data-day="fri">${escapeHtml(row.fri || '')}</td>
+      `;
+      ttBody.appendChild(tr);
+    });
+
+    // attach click-to-edit for each cell (except time column)
+    ttBody.querySelectorAll('td[data-day]').forEach(td => {
+      td.addEventListener('click', (ev) => {
+        const r = Number(td.parentElement.dataset.r);
+        const d = td.dataset.day;
+        const old = currentTimetable[r][d] || '';
+        const val = prompt('Edit subject for ' + capitalize(d) + ' (Period ' + (r+1) + ')', old);
+        if(val === null) return; // cancelled
+        currentTimetable[r][d] = val.trim();
+        renderTableForClass(currentClass); // re-render to update UI
+      });
+    });
+  }
+
+  // Save currentTimetable into storage for selected class
+  function saveCurrent(){
+    if(!currentClass){ alert('Select a class first'); return; }
+    const all = readAll();
+    all[currentClass] = currentTimetable;
+    writeAll(all);
+    alert('Timetable saved for class ' + currentClass);
+  }
+
+  // Load saved (overrides currentTimetable if saved exists)
+  function loadSaved(){
+    if(!currentClass){ alert('Select a class first'); return; }
+    const all = readAll();
+    if(!all[currentClass]){ alert('No saved timetable for class ' + currentClass); return; }
+    renderTableForClass(currentClass);
+    alert('Loaded saved timetable for class ' + currentClass);
+  }
+
+  // Export JSON for class
+  function exportJson(){
+    if(!currentClass){ alert('Select a class first'); return; }
+    const all = readAll();
+    const data = all[currentClass] || currentTimetable || [];
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `timetable_class${currentClass}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // small helpers
+  function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  function escapeHtml(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // wire events
+  classSelect.addEventListener('change', (e) => {
+    renderTableForClass(e.target.value);
+  });
+  saveBtn.addEventListener('click', saveCurrent);
+  loadSavedBtn.addEventListener('click', loadSaved);
+  exportJsonBtn.addEventListener('click', exportJson);
+
+  // dropdown behaviour for navbar
+  document.querySelectorAll('.dropdown').forEach(drop=>{
+    const btn = drop.querySelector('.drop-toggle');
+    const menu = drop.querySelector('.drop-menu');
+    btn?.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      menu.classList.toggle('show');
+    });
+    document.addEventListener('click', ()=> menu.classList.remove('show'));
+  });
+
+  // initialize: start with no class selected (user chooses)
+  renderTableForClass('');
+
+  // expose api for other pages (optional)
+  window.timetable_view = {
+    renderTableForClass, readAll, writeAll
+  };
+</script>
+</body>
+</html>

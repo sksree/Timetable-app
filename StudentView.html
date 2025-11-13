@@ -20,16 +20,8 @@
       width:40px;height:40px;border-radius:8px;
       background:linear-gradient(135deg,#3aa55a,#1f7a3b);
       display:flex;align-items:center;justify-content:center;
-      color:#fff;font-weight:700;transform-origin:center;
-      transition:transform .35s cubic-bezier(.2,.9,.3,1);
+      color:#fff;font-weight:700;
     }
-    .brand .logo.animate { animation: logo-bounce .9s ease; }
-    @keyframes logo-bounce {
-      0% { transform: scale(.92) translateY(-2px); }
-      50% { transform: scale(1.08) translateY(0); }
-      100% { transform: scale(1) translateY(0); }
-    }
-
     .brand h1{font-size:16px}
 
     .nav-right{display:flex;gap:12px;align-items:center}
@@ -92,50 +84,8 @@
       }
     }
 
-    /* WELCOME HEADING */
-    .welcome-wrap{
-      max-width:900px;margin:18px auto 0;padding:0 18px;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-    }
-    .welcome {
-      display:flex;flex-direction:column;gap:6px;
-      transform:translateY(14px);opacity:0;
-      transition:transform .55s cubic-bezier(.22,.9,.3,1),opacity .55s ease;
-    }
-    .welcome.show { transform:translateY(0); opacity:1; }
-
-    .welcome h2 {
-      font-size:24px; color:#154f2f; margin:0; letter-spacing:-0.4px;
-      display:inline-block; position:relative; line-height:1.05;
-    }
-
-    /* shimmer on a small accent word */
-    .accent {
-      display:inline-block;
-      background:linear-gradient(90deg,#1f7a3b 0%, #58c46e 40%, #1f7a3b 100%);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      animation: accent-shimmer 2.6s linear infinite;
-      background-size:200% 100%;
-    }
-    @keyframes accent-shimmer {
-      0% { background-position:0% 0%; }
-      50%{ background-position:100% 0%; }
-      100%{ background-position:0% 0%; }
-    }
-
-    .welcome p { margin:0; color:#55775a; font-size:14px; }
-
-    /* small decorative underline animation */
-    .underline {
-      height:4px; width:140px; border-radius:4px; margin-top:8px;
-      background:linear-gradient(90deg,#cfe9d1,#eaf7ec);
-      transform-origin:left center; transform:scaleX(0);
-      transition:transform .6s cubic-bezier(.2,.9,.3,1);
-    }
-    .underline.show { transform:scaleX(1); }
-
     /* REST OF YOUR PAGE STYLES */
-    .container{max-width:900px;margin:12px auto 36px;padding:0 18px;display:flex;flex-direction:column;gap:20px}
+    .container{max-width:900px;margin:26px auto;padding:0 18px;display:flex;flex-direction:column;gap:20px}
     .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 20px rgba(6,30,15,.03);border:1px solid #e9f4ea}
     .card h2{font-size:18px;margin-bottom:10px}
     .card .sub{font-size:13px;color:#356c43;margin-bottom:12px}
@@ -157,22 +107,15 @@
     .small{font-size:13px;color:#55775a}
     .controls{display:flex;gap:10px;align-items:center}
     select{padding:8px;border-radius:8px;border:1px solid #dcefe0}
-
-    /* small responsive tweak so welcome sits nicely above page content on narrow screens */
-    @media(max-width:720px){
-      .welcome-wrap{padding:8px}
-      .welcome h2{font-size:20px}
-      .underline{width:100px}
-    }
   </style>
 </head>
 
 <body>
 
-  <!-- NAVBAR -->
+   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="brand">
-      <div class="logo" id="navLogo">S</div>
+      <div class="logo">S</div>
       <div>
         <h1> School</h1>
         <div class="small">Admin dashboard</div>
@@ -223,15 +166,6 @@
     </div>
   </nav>
 
-  <!-- WELCOME -->
-  <div class="welcome-wrap" aria-hidden="false">
-    <div class="welcome" id="welcome">
-      <h2>Welcome to the <span class="accent">School</span> Admin Dashboard</h2>
-      <p class="small">Quick access to students, faculty, timetables and attendance.</p>
-      <div class="underline" id="underline"></div>
-    </div>
-  </div>
-
   <!-- PAGE CONTENT (unchanged) -->
   <main class="container">
     <!-- STUDENTS TABLE -->
@@ -256,52 +190,29 @@
       </div>
     </article>
 
-    <!-- TIMETABLE -->
-    <article class="card" id="timetable">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
-        <div>
-          <h2>Class Timetable</h2>
-          <div class="sub">Choose a class to view its weekly schedule</div>
-        </div>
-        <div class="controls">
-          <label for="classSelect" class="small">Show class:</label>
-          <select id="classSelect">
-            <option value="">-- Select class --</option>
-            <option value="8">Class 8</option>
-            <option value="9">Class 9</option>
-            <option value="10">Class 10</option>
-            <option value="11">Class 11</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="overflow:auto">
-        <table class="timetable">
-          <thead>
-            <tr>
-              <th class="time-col">Time</th>
-              <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
-            </tr>
-          </thead>
-          <tbody id="timetableBody"></tbody>
-        </table>
-      </div>
-    </article>
+   
   </main>
 
   <!-- SCRIPTS -->
   <script>
     /* ------------------------------
-       NAVBAR & DROPDOWNS
+       MULTI-DROPDOWN FIX (works for any number)
+       - hover on desktop
+       - click toggles (mobile + desktop)
+       - slight mouseleave delay
+       - close on outside click or link click
     -------------------------------*/
+
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
     hamburger?.addEventListener('click', ()=> navLinks.classList.toggle('show'));
 
+    // attach behavior to every dropdown
     document.querySelectorAll('.dropdown').forEach(drop => {
       const toggle = drop.querySelector('.drop-toggle');
       const menu = drop.querySelector('.drop-menu');
       let hideTimer = null;
+      // hover open (desktop)
       drop.addEventListener('mouseenter', () => {
         if(window.innerWidth > 820) {
           clearTimeout(hideTimer);
@@ -309,6 +220,7 @@
           toggle.setAttribute('aria-expanded', 'true');
         }
       });
+      // hover leave (desktop) with slight delay
       drop.addEventListener('mouseleave', () => {
         if(window.innerWidth > 820) {
           hideTimer = setTimeout(() => {
@@ -317,6 +229,8 @@
           }, 180);
         }
       });
+
+      // click toggles the menu (works on mobile & desktop)
       toggle.addEventListener('click', (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
@@ -324,12 +238,16 @@
         const opened = menu.classList.toggle('show');
         toggle.setAttribute('aria-expanded', opened ? 'true' : 'false');
       });
+
+      // close this menu if user clicks outside of it
       document.addEventListener('click', (e) => {
         if(!drop.contains(e.target)) {
           menu.classList.remove('show');
           toggle.setAttribute('aria-expanded', 'false');
         }
       });
+
+      // when a link inside the menu is clicked: close mobile nav & this menu
       menu.querySelectorAll('a').forEach(a => {
         a.addEventListener('click', () => {
           if(window.innerWidth <= 820) navLinks.classList.remove('show');
@@ -340,27 +258,9 @@
     });
 
     /* -------------------------
-       WELCOME ANIMATION TRIGGER
-    --------------------------*/
-    const welcome = document.getElementById('welcome');
-    const underline = document.getElementById('underline');
-    const navLogo = document.getElementById('navLogo');
-
-    // animate shortly after load
-    window.addEventListener('load', ()=>{
-      // small delay so the page doesn't feel jumpy
-      setTimeout(()=>{
-        welcome.classList.add('show');
-        underline.classList.add('show');
-        // add a one-off logo animation
-        navLogo.classList.add('animate');
-        setTimeout(()=> navLogo.classList.remove('animate'), 900);
-      }, 160);
-    });
-
-    /* -------------------------
        STUDENT + TIMETABLE JS
     --------------------------*/
+
     const students = [
       {id:'S001', name:'Aanya Sharma', age:14, grade:'9', email:'aanya@example.com'},
       {id:'S002', name:'Rahul Nair', age:15, grade:'10', email:'rahul@example.com'},
@@ -409,31 +309,12 @@
       }
     }
 
-    // TIMETABLE DATA for multiple classes
     const timetableData = {
       '8': [
         {time:'08:30 - 09:15', mon:'Math', tue:'Science', wed:'English', thu:'Social', fri:'PE'},
         {time:'09:20 - 10:05', mon:'English', tue:'Math', wed:'Art', thu:'Science', fri:'Music'},
         {time:'10:20 - 11:05', mon:'Computer', tue:'History', wed:'Math', thu:'English', fri:'Library'},
         {time:'11:10 - 11:55', mon:'Science', tue:'English', wed:'Social', thu:'Math', fri:'Assembly'}
-      ],
-      '9': [
-        {time:'08:30 - 09:15', mon:'Math', tue:'Physics', wed:'English', thu:'Chemistry', fri:'PE'},
-        {time:'09:20 - 10:05', mon:'English', tue:'Math', wed:'Biology', thu:'History', fri:'Art'},
-        {time:'10:20 - 11:05', mon:'Science', tue:'Computer', wed:'Math', thu:'Geography', fri:'Music'},
-        {time:'11:10 - 11:55', mon:'History', tue:'English', wed:'Physics', thu:'Math', fri:'Assembly'}
-      ],
-      '10': [
-        {time:'08:30 - 09:15', mon:'Physics', tue:'Math', wed:'Chemistry', thu:'English', fri:'PE'},
-        {time:'09:20 - 10:05', mon:'Math', tue:'Biology', wed:'History', thu:'Physics', fri:'Art'},
-        {time:'10:20 - 11:05', mon:'Computer', tue:'Chemistry', wed:'Math', thu:'English', fri:'Music'},
-        {time:'11:10 - 11:55', mon:'English', tue:'Physics', wed:'Geography', thu:'Math', fri:'Assembly'}
-      ],
-      '11': [
-        {time:'08:30 - 09:15', mon:'Calculus', tue:'Physics', wed:'Economics', thu:'Chemistry', fri:'PE'},
-        {time:'09:20 - 10:05', mon:'Physics', tue:'Calculus', wed:'English', thu:'Biology', fri:'Art'},
-        {time:'10:20 - 11:05', mon:'Computer', tue:'Chemistry', wed:'Math', thu:'Economics', fri:'Music'},
-        {time:'11:10 - 11:55', mon:'English', tue:'Physics', wed:'Geography', thu:'Calculus', fri:'Assembly'}
       ]
     };
 
@@ -442,7 +323,7 @@
       ttBody.innerHTML = "";
       if(!cls || !timetableData[cls]){
         ttBody.innerHTML = `<tr><td class="time-col">--</td>
-          <td colspan="5" class="small">Please select a class from the dropdown above to view its timetable.</td></tr>`;
+          <td colspan="5" class="small">Select a class to view timetable</td></tr>`;
         return;
       }
 
@@ -463,11 +344,6 @@
     document.getElementById('classSelect').addEventListener('change',e=>{
       renderTimetable(e.target.value);
     });
-
-    // initialize: render nothing until user selects class
-    (function init(){
-      renderTimetable('');
-    })();
 
   </script>
 

@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Faculty Registration — Indigo School</title>
+  <style>
+    /* ---------- NAVBAR STYLES ---------- */
+    :root{
+      --accent:#2f8f3c;
+      --accent-2:#196b2a;
+      --bg:#f2fff7;
+      --muted:#57785d;
+      --card:#ffffff;
+      --border:#e4f2e6;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg,var(--bg),#ffffff);
+      color:#0b3420;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .navbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 20px;background:#fff;border-bottom:1px solid #e6f0ea;
+      position:sticky;top:0;z-index:120;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#3aa55a,#1f7a3b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .brand h1{font-size:16px;margin:0}
+    .nav-right{display:flex;gap:12px;align-items:center}
+    .nav-links{display:flex;gap:12px;align-items:center}
+    .nav-links a, .nav-links button.link-btn{
+      padding:8px 12px;border-radius:8px;text-decoration:none;color:#0b2a1a;background:transparent;border:0;cursor:pointer;
+    }
+    .nav-links a:hover{background:#eef7ee}
+    .btn{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+
+    /* dropdown (class-based) */
+    .dropdown{position:relative}
+    .drop-toggle{
+      display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 12px;border-radius:8px;background:transparent;border:0;
+    }
+    .drop-toggle:hover{background:#eef7ee}
+    .caret{font-size:12px;color:#175a33}
+    .drop-menu{
+      position:absolute;top:calc(100% + 8px);left:0;min-width:200px;background:#fff;border-radius:8px;
+      box-shadow:0 10px 30px rgba(6,30,15,.08);border:1px solid #e6f2ea;overflow:hidden;display:none;z-index:60;
+    }
+    .drop-menu.show{display:block}
+    .drop-menu a{display:block;padding:10px 12px;text-decoration:none;color:#0b2a1a;border-bottom:1px solid #f0f6f3}
+    .drop-menu a:last-child{border-bottom:0}
+    .drop-menu a:hover{background:#f6fff5}
+
+    .hamburger{display:none;background:transparent;border:0;font-size:20px}
+    @media (max-width:720px){
+      .nav-links{display:none;position:absolute;right:12px;top:64px;flex-direction:column;background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(6,30,15,.06)}
+      .hamburger{display:block}
+      .nav-links.show{display:flex}
+      .drop-menu{position:static;box-shadow:none;border:0;padding:0;background:transparent}
+      .drop-menu a{background:#fff;border-radius:8px;margin-bottom:6px;border-bottom:0}
+    }
+
+    /* ---------- PAGE / FORM STYLES (kept & slightly refactored) ---------- */
+    .wrap{
+      max-width:680px;
+      margin:56px auto;
+      padding:24px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:16px;
+      padding:28px;
+      box-shadow:0 14px 40px rgba(15,65,30,0.06);
+      border:1px solid var(--border);
+    }
+
+    h1{margin:0 0 6px;color:var(--accent);font-size:24px;letter-spacing:-0.3px}
+    p.lead{margin:0 0 18px;color:var(--muted);font-size:14px}
+
+    form{display:flex;flex-direction:column;gap:18px}
+
+    label{display:block;font-weight:600;color:#1a4a2b;margin-bottom:8px;font-size:14px}
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    select,
+    textarea,
+    input[type="date"] {
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1.5px solid #dcefe0;
+      background:#fbfffc;
+      font-size:15px;
+      transition:all .18s ease;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    input::placeholder, textarea::placeholder { color:#98b39f; }
+    input:hover, select:hover, textarea:hover { border-color:#bfe3c6; background:#fff }
+    input:focus, select:focus, textarea:focus {
+      outline:none;
+      border-color:var(--accent);
+      box-shadow:0 0 0 5px rgba(47,143,60,0.12);
+      background:#fff;
+    }
+
+    .avatar-preview{
+      width:110px;height:110px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+      border:2px dashed #cfe7d3;background:#f7fff7;color:#2f7b46;font-size:13px;margin-bottom:8px;
+    }
+
+    .field{display:flex;flex-direction:column;gap:6px}
+    .muted{font-size:13px;color:#6d8c75}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+    .pw-wrap{position:relative}
+    .pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:0;color:#2f8f3c;cursor:pointer;font-weight:600;padding:6px;border-radius:8px}
+
+    textarea{min-height:96px;resize:vertical;padding-top:10px}
+
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:8px}
+    .btn-primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 10px 26px rgba(30,100,50,0.12);padding:12px 18px;border-radius:12px;border:0;font-weight:700;cursor:pointer;font-size:15px}
+    .btn-primary:hover{transform:translateY(-2px)}
+    .btn-ghost{background:#fff;border:1.5px solid #d6eede;color:var(--accent);padding:12px 18px;border-radius:12px;cursor:pointer}
+
+    .hint{font-size:13px;color:#587a63}
+
+    @media(max-width:640px){
+      .wrap{padding:18px;margin:28px auto}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h1> School</h1>
+        <div style="font-size:12px;color:#55775a">Admin dashboard</div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <button class="hamburger" id="hamburger" aria-label="menu">☰</button>
+
+      <div class="nav-links" id="navLinks">
+        <!-- Students dropdown -->
+          <a class="link-btn" href="home.html">Home</a>
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Students <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="StudentReg.html">Student Registration</a>
+            <a href="attendance.html">Attendance</a>
+             
+          </div>
+        </div>
+
+        <!-- Faculty dropdown -->
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Faculty <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="faculty.html">Faculty Registration</a>
+            <a href="leave.html">Leave Apply</a>
+            <a href="leaveView.html">Leave View</a>
+          </div>
+        </div>
+
+        <!-- Timetable dropdown -->
+        <div class="dropdown">
+          <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">
+            Time Table <span class="caret">▾</span>
+          </button>
+          <div class="drop-menu" role="menu">
+            <a href="TimetableForm.html">Add Time Table</a>
+            <a href="timetableview.html">Timetable View</a>
+          </div>
+        </div>
+
+       
+        <button class="btn" onclick="location.href='index.html'">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <div class="wrap">
+    <div class="card" role="region" aria-labelledby="title">
+      <h1 id="title">Faculty Registration</h1>
+      <p class="lead">Register a new faculty member — each field is one-per-row for clarity.</p>
+
+      <form id="facultyForm" autocomplete="off">
+        <!-- Full name -->
+        <div class="field">
+          <label for="f-name">Full Name *</label>
+          <input id="f-name" type="text" placeholder="e.g., Dr. S. K. Sree" required />
+        </div>
+
+        <!-- Employee ID -->
+        <div class="field">
+          <label for="f-id">Employee ID *</label>
+          <input id="f-id" type="text" placeholder="e.g., F001" required />
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label for="f-email">Email *</label>
+          <input id="f-email" type="email" placeholder="you@school.edu" required />
+        </div>
+
+        <!-- Phone -->
+        <div class="field">
+          <label for="f-phone">Phone</label>
+          <input id="f-phone" type="tel" placeholder="+91 98765 43210" />
+        </div>
+
+        <!-- Department -->
+        <div class="field">
+          <label for="f-dept">Department *</label>
+          <select id="f-dept" required>
+            <option value="">Select department</option>
+            <option>Mathematics</option>
+            <option>Physics</option>
+            <option>Chemistry</option>
+            <option>Biology</option>
+            <option>Computer Science</option>
+            <option>English</option>
+            <option>History</option>
+          </select>
+        </div>
+
+        <!-- Designation -->
+        <div class="field">
+          <label for="f-role">Designation</label>
+          <input id="f-role" type="text" placeholder="e.g., Assistant Professor / Lecturer" />
+        </div>
+
+        <!-- Date of Joining -->
+        <div class="field">
+          <label for="f-join">Date of Joining</label>
+          <input id="f-join" type="date" />
+        </div>
+
+        <!-- Password -->
+        <div class="field pw-wrap">
+          <label for="f-pass">Password *</label>
+          <input id="f-pass" type="password" placeholder="Create a password" required />
+          <button type="button" class="pw-toggle" id="togglePw">Show</button>
+          <div class="muted">Use at least 8 characters. We'll store locally (demo).</div>
+        </div>
+
+        <!-- Bio -->
+        <div class="field">
+          <label for="f-bio">Short Bio</label>
+          <textarea id="f-bio" placeholder="A short description or qualifications (one-per-row display)"></textarea>
+        </div>
+
+        <!-- Photo upload -->
+        <div class="field">
+          <label for="f-photo">Profile Photo</label>
+          <div class="avatar-preview" id="avatarPreview">No image</div>
+          <input id="f-photo" type="file" accept="image/*" />
+          <div class="hint">Recommended: square image, max 500KB.</div>
+        </div>
+
+        <!-- Submit / Back -->
+        <div class="actions">
+          <button type="button" class="btn-ghost" onclick="location.href='home.html'">← Back</button>
+          <button type="submit" class="btn-primary">Register Faculty</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    /* ---------- NAVBAR INTERACTIONS (hamburger + multiple dropdowns) ---------- */
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger?.addEventListener('click', () => navLinks.classList.toggle('show'));
+
+    document.querySelectorAll('.dropdown').forEach(drop => {
+      const toggle = drop.querySelector('.drop-toggle');
+      const menu = drop.querySelector('.drop-menu');
+      let hideTimer = null;
+
+      // desktop hover open
+      drop.addEventListener('mouseenter', () => {
+        if (window.innerWidth > 820) {
+          clearTimeout(hideTimer);
+          menu.classList.add('show');
+          toggle.setAttribute('aria-expanded', 'true');
+        }
+      });
+      // desktop delayed close
+      drop.addEventListener('mouseleave', () => {
+        if (window.innerWidth > 820) {
+          hideTimer = setTimeout(() => {
+            menu.classList.remove('show');
+            toggle.setAttribute('aria-expanded', 'false');
+          }, 180);
+        }
+      });
+
+      // click toggles (mobile + desktop)
+      toggle.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        clearTimeout(hideTimer);
+        const opened = menu.classList.toggle('show');
+        toggle.setAttribute('aria-expanded', opened ? 'true' : 'false');
+      });
+
+      // close when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!drop.contains(e.target)) {
+          menu.classList.remove('show');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // close on link click and collapse mobile nav
+      menu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          if (window.innerWidth <= 820) navLinks.classList.remove('show');
+          menu.classList.remove('show');
+        });
+      });
+    });
+
+    /* ---------- EXISTING PAGE SCRIPTS (image preview, pw toggle, form save) ---------- */
+
+    // Image preview
+    const photoInput = document.getElementById('f-photo');
+    const avatarPreview = document.getElementById('avatarPreview');
+    photoInput.addEventListener('change', e => {
+      const f = e.target.files?.[0];
+      if (!f) { avatarPreview.textContent = 'No image'; avatarPreview.style.backgroundImage = ''; return; }
+      if (!f.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        avatarPreview.style.backgroundImage = `url('${ev.target.result}')`;
+        avatarPreview.style.backgroundSize = 'cover';
+        avatarPreview.style.backgroundPosition = 'center';
+        avatarPreview.textContent = '';
+      };
+      reader.readAsDataURL(f);
+    });
+
+    // Password show/hide
+    const pw = document.getElementById('f-pass');
+    const toggle = document.getElementById('togglePw');
+    toggle.addEventListener('click', () => {
+      if (pw.type === 'password') { pw.type = 'text'; toggle.textContent = 'Hide'; }
+      else { pw.type = 'password'; toggle.textContent = 'Show'; }
+    });
+
+    // Form submit -> simple validation and demo save to localStorage
+    const form = document.getElementById('facultyForm');
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('f-name').value.trim();
+      const empId = document.getElementById('f-id').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const dept = document.getElementById('f-dept').value;
+      const pass = document.getElementById('f-pass').value;
+
+      if (!name || !empId || !email || !dept || pass.length < 8) {
+        alert('Please fill required fields and ensure password is at least 8 characters.');
+        return;
+      }
+
+      // store demo record in localStorage under 'facultyData'
+      const key = 'facultyData';
+      const store = JSON.parse(localStorage.getItem(key) || '[]');
+      store.push({
+        id: empId,
+        name,
+        email,
+        phone: document.getElementById('f-phone').value.trim(),
+        dept,
+        role: document.getElementById('f-role').value.trim(),
+        joinDate: document.getElementById('f-join').value,
+        bio: document.getElementById('f-bio').value.trim(),
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem(key, JSON.stringify(store));
+      alert('✅ Faculty registered (demo). Record saved to localStorage.');
+      location.href = 'home.html';
+    });
+  </script>
+</body>
+</html>
